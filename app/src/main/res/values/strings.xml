@@ -1,9 +1,12 @@
 <resources>
-    <string name="app_name">image_cropper</string>
+    <string name="app_name">CropNGrid</string>
     <string name="photo_picked">Photo picked</string>
     <string name="saving_picture_parts">Save picture parts</string>
     <string name="action">Action</string>
     <string name="permission_needed">The application requires the storage permission</string>
     <string name="plus">Plus</string>
     <string name="grant">Grant</string>
+    <string name="app_description_home">Tire uma nova foto ou escolha na galeria e faça um crop direto pro seu feed do instagram!</string>
+    <string name="start">Começar</string>
+    <string name="crop_the_img">CROP THE IMG</string>
 </resources>

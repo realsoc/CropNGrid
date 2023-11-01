@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "image_cropper"
+rootProject.name = "cropngrid"
 include(":app")
  

@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Image_cropper" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.CropNGrid" parent="android:Theme.Material.Light.NoActionBar" >
+    </style>
+
+    <style name="Theme.CropNGrid.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/background_color</item>
+        <item name="windowSplashScreenAnimationDuration">2000</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_animation</item>
+        <item name="postSplashScreenTheme">@style/Theme.CropNGrid</item>
+    </style>
 </resources>
