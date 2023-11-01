@@ -20,10 +20,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
+// Bad idea, todo:  remove this and find a way to have the VM triggering activity's code (event?) or lifecycle
+//  observer and setting android actions...
 interface AndroidActions {
     fun pickPhotoRequest()
 }
+
 class MainViewModel(
     application: Application,
     private val navController: NavHostController,
@@ -64,7 +66,7 @@ class MainViewModel(
         baseName: String
     ) {
         viewModelScope.launch {
-            navController.navigateTo(Screen.End(true))
+            navController.navigateTo(Screen.End(true), false)
 
             var coordinateSystem = pCoordinateSystem
             var parts = pParts
@@ -96,7 +98,7 @@ class MainViewModel(
                     bitmap.safeRecycle()
                 }
             }
-            navController.navigateTo(Screen.End(false))
+            navController.navigateTo(Screen.End(false), false)
         }
     }
 
@@ -129,7 +131,9 @@ class MainViewModel(
     }
 
     fun homeClicked() {
-        TODO("Not yet implemented")
+        viewModelScope.launch {
+            navController.navigateTo(Screen.Home(Screen.Home.HomeMode.Start))
+        }
     }
 
     fun cropListClicked() {

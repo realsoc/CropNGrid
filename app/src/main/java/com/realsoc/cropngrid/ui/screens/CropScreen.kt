@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,7 +67,6 @@ import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.models.Transformation
 import com.realsoc.cropngrid.ui.scale
-import com.realsoc.cropngrid.ui.testBitmap
 import com.realsoc.cropngrid.ui.toPoint
 import com.realsoc.cropngrid.ui.toVector
 import com.realsoc.cropngrid.ui.transform
@@ -78,6 +76,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
 import java.lang.Float.max
 
+// TODO problem for 2columns 5 row
 @Composable
 fun LoadBitmap(encodedUri: String, onLoaded: (Bitmap) -> Unit) {
     val context = LocalContext.current
@@ -166,93 +165,93 @@ fun CropContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         }
     }
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-        BottomSheetScaffold(
-            sheetDragHandle = { SheetDragHandle(state = bottomSheetScaffoldState) },
-            scaffoldState = bottomSheetScaffoldState,
-            sheetContent = {
-                    GridParametersLayout(
-                        gridParameters = gridParameters,
-                        onGridParameters = { callback -> gridParameters = callback(gridParameters) },
-                        modifier = Modifier.padding(20.dp)
-                    )
+    BottomSheetScaffold(
+        sheetDragHandle = { SheetDragHandle(state = bottomSheetScaffoldState) },
+        scaffoldState = bottomSheetScaffoldState,
+        sheetContent = {
+            GridParametersLayout(
+                gridParameters = gridParameters,
+                onGridParameters = { callback -> gridParameters = callback(gridParameters) },
+                modifier = Modifier.padding(20.dp)
+            )
+        }
+    ) {
+        Column(modifier.fillMaxSize()) {
+            val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+                coordinateSystem = coordinateSystem.withChange(
+                    zoomChange,
+                    offsetChange.toVector(),
+                    rotationChange
+                )
             }
-        ) {
-            Column(modifier.fillMaxSize()) {
-                val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-                    coordinateSystem = coordinateSystem.withChange(
-                        zoomChange,
-                        offsetChange.toVector(),
-                        rotationChange
-                    )
-                }
 
-                DimensionLayout(
+            DimensionLayout(
+                Modifier
+                    .weight(1f)
+                    .clipToBounds()
+            ) {
+                Box(
                     Modifier
-                        .weight(1f)
-                        .clipToBounds()
+                        .fillMaxSize()
+                        .background(Color.Black)
+                        .drawWithContent {
+                            drawContent()
+                            // Calculate grid area was here before. But was recalculated on every frame
+                            drawGridArea(gridArea, gridParameters)
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(Color.Black)
-                            .drawWithContent {
-                                drawContent()
-                                // Calculate grid area was here before. But was recalculated on every frame
-                                drawGridArea(gridArea, gridParameters)
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val coroutineScope = rememberCoroutineScope()
+                    val coroutineScope = rememberCoroutineScope()
 
-                        BoxWithConstraints(
-                            Modifier
-                                .transformable(state = state)
-                                .pointerInput(Unit) {
-                                    this.detectTapGestures(
-                                        onDoubleTap = {
-                                            coroutineScope.launch {
-                                                animateToInitialState(
-                                                    bitmap!!.frame,
-                                                    gridArea,
-                                                    coordinateSystem.pivot,
-                                                    coordinateSystem.transformation
-                                                ) { state, _ ->
-                                                    coordinateSystem = coordinateSystem.withTransformation(state)
-                                                }
+                    BoxWithConstraints(
+                        Modifier
+                            .transformable(state = state)
+                            .pointerInput(Unit) {
+                                this.detectTapGestures(
+                                    onDoubleTap = {
+                                        coroutineScope.launch {
+                                            animateToInitialState(
+                                                bitmap!!.frame,
+                                                gridArea,
+                                                coordinateSystem.pivot,
+                                                coordinateSystem.transformation
+                                            ) { state, _ ->
+                                                coordinateSystem = coordinateSystem.withTransformation(state)
                                             }
                                         }
-                                    )
-                                }
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            bitmap?.let { bitmap ->
-                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                    clipRect(0f, 0f, constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()) {
-                                        withTransform(canvasTransformation(coordinateSystem)) {
-                                            drawImage(bitmap.asImageBitmap())
-                                        }
+                                    }
+                                )
+                            }
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        bitmap?.let { bitmap ->
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                clipRect(0f, 0f, constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()) {
+                                    withTransform(canvasTransformation(coordinateSystem)) {
+                                        drawImage(bitmap.asImageBitmap())
                                     }
                                 }
                             }
                         }
                     }
-                    // Calculate grid was isolated here to calculate only when it's required
-                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                        gridArea = calculateGridArea(
-                            gridParameters,
-                            constraints.maxWidth.toFloat(),
-                            constraints.maxHeight.toFloat()
-                        )
-                    }
                 }
-                val offset = LocalDensity.current.run { bottomSheetScaffoldState.bottomSheetState.requireOffset().toDp() }
-                FloatingActionButton(modifier = Modifier
-                    .offset(y = -100.dp)
-                    .align(Alignment.End),
-                    onClick = { showDialog = true}) {
-                    Icon(Icons.Filled.Check, "")
+                // Calculate grid was isolated here to calculate only when it's required
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    gridArea = calculateGridArea(
+                        gridParameters,
+                        constraints.maxWidth.toFloat(),
+                        constraints.maxHeight.toFloat()
+                    )
                 }
+            }
+            val offset = LocalDensity.current.run { bottomSheetScaffoldState.bottomSheetState.requireOffset().toDp() }
+            FloatingActionButton(modifier = Modifier
+                .offset(y = (-100).dp)
+                .align(Alignment.End),
+                onClick = { showDialog = true }) {
+                Icon(Icons.Filled.Check, "")
+            }
         }
     }
 

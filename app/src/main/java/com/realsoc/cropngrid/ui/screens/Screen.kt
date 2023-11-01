@@ -4,11 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,32 +12,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.realsoc.cropngrid.MainViewModel
 import com.realsoc.cropngrid.ui.screens.Screen.Home.*
 
 sealed interface Screen {
     val route: String
 
-    @Composable
-    fun Content(viewModel: MainViewModel, modifier: Modifier)
-
-    @Composable
-    fun AppBar(viewModel: MainViewModel, modifier: Modifier)
-
-    @Composable
-    fun BottomBar(viewModel: MainViewModel, modifier: Modifier)
-
     class Home(val mode: HomeMode) : Screen {
-        override val route: String = "$HOME_DESTINATION/$HOME_PARAM_1"
+        override val route: String = "$HOME_DESTINATION/$mode"
 
-        @Composable
-        override fun Content(viewModel: MainViewModel, modifier: Modifier) = HomeContent(viewModel, modifier)
-        @Composable
-        override fun AppBar(viewModel: MainViewModel, modifier: Modifier) = HomeAppBar(viewModel, modifier)
-        @Composable
-        override fun BottomBar(viewModel: MainViewModel, modifier: Modifier) = HomeBottomBar(viewModel, modifier)
-
+        // Home Screen has two contents  mode start and mode crop history
         sealed class HomeMode {
             object Start: HomeMode()
             object CropHistory: HomeMode()
@@ -59,23 +39,9 @@ sealed interface Screen {
     }
     class Crop(val encodedUri: String) : Screen {
         override val route: String = "$CROP_DESTINATION/$encodedUri"
-
-        @Composable
-        override fun Content(viewModel: MainViewModel, modifier: Modifier) = CropBottomBar(viewModel, modifier)
-        @Composable
-        override fun AppBar(viewModel: MainViewModel, modifier: Modifier) = CropAppBar(viewModel, modifier)
-        @Composable
-        override fun BottomBar(viewModel: MainViewModel, modifier: Modifier) = CropBottomBar(viewModel, modifier)
     }
     class End(val loading: Boolean) : Screen {
         override val route: String = "$END_DESTINATION/${loading}"
-
-        @Composable
-        override fun Content(viewModel: MainViewModel, modifier: Modifier) = EndContent(viewModel, modifier)
-        @Composable
-        override fun AppBar(viewModel: MainViewModel, modifier: Modifier) = EndAppBar(viewModel, modifier)
-        @Composable
-        override fun BottomBar(viewModel: MainViewModel, modifier: Modifier) = EndBottomBar(viewModel, modifier)
     }
 
     companion object {
@@ -92,6 +58,7 @@ sealed interface Screen {
             "$END_DESTINATION/{$END_PARAM_1}"
         )
 
+        // transform home/totoMode in home
         private fun extractDestination(route: String): String? {
             val pattern = "\\w+"
             return Regex(pattern).find(route)?.value
@@ -131,7 +98,7 @@ sealed interface Screen {
         @Composable
         fun TopBar(viewModel: MainViewModel, screen: Screen) {
             when(screen) {
-                is Home -> {}
+                is Home -> HomeAppBar(viewModel = viewModel)
                 is Crop -> _TopBar(title = "Cropping", backEnabled = true, viewModel::onBackClicked)
                 is End -> _TopBar(title = "Ending", backEnabled = false, viewModel::onBackClicked)
             }
@@ -140,25 +107,9 @@ sealed interface Screen {
         @Composable
         fun BottomBar(viewModel: MainViewModel, screen: Screen) {
             when(screen) {
-                is Home -> HomeBottomBar(viewModel)
-                is Crop -> {
-                    BottomAppBar(
-                        actions = {
-                            IconButton(onClick = { }) {
-                                Icon(Icons.Filled.Add, contentDescription = "Localized description")
-                            }
-                            IconButton(onClick = { }) {
-                                Icon(Icons.Filled.Build, contentDescription = "Localized description")
-                            }
-                            IconButton(onClick = { }) {
-                                Icon(Icons.Filled.CheckCircle, contentDescription = "Localized description")
-                            }
-                        },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                is End -> {}
+                is Home -> HomeBottomBar(viewModel = viewModel)
+                is Crop -> CropBottomBar(viewModel = viewModel)
+                is End -> EndBottomBar(viewModel = viewModel)
             }
         }
 
@@ -168,8 +119,8 @@ sealed interface Screen {
         private fun _TopBar(title: String, backEnabled: Boolean, onBackClicked: () -> Unit) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
                 ),
                 title = { Text(title) },
                 navigationIcon = {

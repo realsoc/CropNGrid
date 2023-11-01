@@ -20,17 +20,18 @@ fun CropNGridNavHost(navController: NavHostController, viewModel: MainViewModel)
         }
     }
 }
-fun NavHostController.navigateTo(screen: Screen) {
+fun NavHostController.navigateTo(screen: Screen, popUp: Boolean = false) {
     when (screen) {
         is Screen.Home -> navigate(screen.route) {
-            popUpTo(graph.findStartDestination().id)
-            //launchSingleTop = true
+            if (popUp) popUpTo(graph.findStartDestination().id)
+            launchSingleTop = true
         }
         is Screen.Crop -> navigate(screen.route) {
+            if (popUp) popUpTo(graph.findStartDestination().id)
             launchSingleTop = true
         }
         is Screen.End -> navigate(screen.route) {
-            popUpTo(graph.findStartDestination().id)
+            if (popUp) popUpTo(graph.findStartDestination().id)
             launchSingleTop = true
         }
     }

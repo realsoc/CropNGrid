@@ -1,8 +1,10 @@
 package com.realsoc.cropngrid.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -93,16 +95,18 @@ fun HomeBottomBar(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val uiState: Screen.Home? by viewModel.uiState.filterIsInstance<Screen.Home>().collectAsState(null)
     BottomAppBar(
         actions = {
-            IconButton(onClick = viewModel::homeClicked) {
-                Icon(Icons.Default.Home, "Home")
+            Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                IconButton(onClick = viewModel::homeClicked) {
+                    Icon(Icons.Default.Home, "Home")
+                }
+                IconButton(onClick = viewModel::cropListClicked) {
+                    Icon(Icons.Default.List, "Previous crop list")
+                }
             }
-            IconButton(onClick = viewModel::cropListClicked) {
-                Icon(Icons.Default.List, "Previous crop list")
-            }
+
         },
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
         tonalElevation = 3.dp
-
     )
 }

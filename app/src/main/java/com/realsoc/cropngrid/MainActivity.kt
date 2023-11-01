@@ -22,14 +22,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -44,6 +42,7 @@ class MainActivity : ComponentActivity(), AndroidActions {
 
     private val navController = NavHostController(this).apply {
         navigatorProvider.apply {
+            // mandatory otherwise navController crash when calling composable(route)
             addNavigator(DialogNavigator())
             addNavigator(ComposeNavigator())
         }
@@ -51,11 +50,11 @@ class MainActivity : ComponentActivity(), AndroidActions {
 
     private val viewModel: MainViewModel by viewModels { MainViewModel.Factory(application, navController, this) }
 
-
     private var storageResultActivity: ActivityResultLauncher<String> = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            // Kinda ugly but for now it works
             pickPhoto()
         } else {
             viewModel.storageRecused(startPermissionIntent =  {
@@ -77,7 +76,6 @@ class MainActivity : ComponentActivity(), AndroidActions {
         installSplashScreen()
 
         setContent {
-
             val screen by viewModel.uiState.collectAsState()
 
             val scaffoldState = rememberCropNGridScaffoldState()
@@ -86,7 +84,7 @@ class MainActivity : ComponentActivity(), AndroidActions {
                 Scaffold(
                     topBar = { Screen.TopBar(viewModel = viewModel, screen = screen) },
                     snackbarHost = { SnackbarHost(scaffoldState.snackbarHostState) },
-                    bottomBar = { Screen.BottomBar(viewModel = viewModel,screen) },
+                    bottomBar = { Screen.BottomBar(viewModel = viewModel, screen = screen) },
                     ) { paddingValues ->
                         Surface(
                             modifier = Modifier
@@ -110,7 +108,7 @@ class MainActivity : ComponentActivity(), AndroidActions {
                 // TODO : show dialog explaining why to accept Confirm / later
                 // On confirm
                 storageResultActivity.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                // On later drop
+                // On later, drop
                 //show user app can't save image for storage permission denied
             } else {
                 storageResultActivity.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -133,8 +131,8 @@ class MainActivity : ComponentActivity(), AndroidActions {
     // From https://medium.com/@stefanoq21/accompanist-system-ui-controller-deprecated-a3678ba3f244
     @Composable
     private fun ChangeSystemBarsTheme(lightTheme: Boolean) {
-        val topBarColor = MaterialTheme.colorScheme.surface.toArgb()
-        val bottomBarColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp).toArgb()
+        val topBarColor = MaterialTheme.colorScheme.background.toArgb()
+        val bottomBarColor = MaterialTheme.colorScheme.surface.toArgb()
         LaunchedEffect(lightTheme) {
             if (lightTheme) {
                 enableEdgeToEdge(
