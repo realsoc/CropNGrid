@@ -12,14 +12,16 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.IntSize
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import java.net.URLDecoder
 import java.net.URLEncoder
 
-fun Uri.encode(): String {
-    return URLEncoder.encode(toString(), "UTF-8")
-}
+private val URL_CHARACTER_ENCODING = Charsets.UTF_8.name()
+
+fun decode(input : String): String = URLDecoder.decode(input, URL_CHARACTER_ENCODING)
+
+fun encode(input: String): String = URLEncoder.encode(input, URL_CHARACTER_ENCODING)
+
 
 fun String.toUri(): Uri {
     return Uri.parse(this)
@@ -85,14 +87,10 @@ operator fun Size.minus(other: Size): Offset {
 
 suspend fun createBitmapList(
     source: Bitmap,
-    areas: List<Rect>,
+    areas: List<List<Rect>>,
     coordinateSystem: CoordinateSystem
-): List<Bitmap> = withContext(Dispatchers.IO) {
-    return@withContext areas.map {
-        async {
-            createBitmapOfArea(source, it, coordinateSystem)
-        }
-    }.awaitAll()
+): List<List<Bitmap>> = withContext(Dispatchers.IO) {
+    areas.map { it.map { rect -> createBitmapOfArea(source, rect, coordinateSystem) } }
 }
 
 suspend fun createBitmapOfArea(

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -24,10 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.realsoc.cropngrid.createBitmapList
-import com.realsoc.cropngrid.frame
 import com.realsoc.cropngrid.ui.getCropGrid
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
@@ -45,18 +46,21 @@ fun ConfirmCropDialog(
     Dialog(
         onDismissRequest = onDismissRequest
     ) {
-        var imagePartList by remember { mutableStateOf<List<Bitmap>>(listOf()) }
+        var imagePartList by remember { mutableStateOf<List<List<Bitmap>>>(listOf()) }
 
         LaunchedEffect(source, gridArea, gridParameters, coordinateSystem) {
             val areas = getCropGrid(gridArea, gridParameters)
             imagePartList = createBitmapList(source, areas, coordinateSystem)
         }
-        Card(modifier) {
+        val maxHeight = LocalConfiguration.current.screenHeightDp.dp - 100.dp
+        Card(modifier.heightIn(max = maxHeight)) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text("Crop the image ?", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(10.dp))
                 AnimatedContent(
-                    modifier = Modifier.aspectRatio(gridParameters.gridRatio),
+                    modifier = Modifier.weight(1f, fill = false)
+                        .aspectRatio(gridParameters.gridRatio)
+                        .align(Alignment.CenterHorizontally),
                     targetState = imagePartList, label = ""
                 ) { imagePartList ->
                     when {
@@ -65,10 +69,7 @@ fun ConfirmCropDialog(
                         }
                         else -> {
                             SplittingBoxAnimated(
-                                imagePartList,
-                                gridParameters.columnNumber,
-                                gridParameters.rowNumber,
-                                imagePartList.first().frame
+                                imagePartList
                             )
                         }
                     }

@@ -9,4 +9,7 @@
     <string name="app_description_home">Tire uma nova foto ou escolha na galeria e faça um crop direto pro seu feed do instagram!</string>
     <string name="start">Começar</string>
     <string name="crop_the_img">CROP THE IMG</string>
+    <string name="title_home">Home</string>
+    <string name="home">Home</string>
+    <string name="crop_history">Crop History</string>
 </resources>

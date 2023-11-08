@@ -3,23 +3,48 @@ package com.realsoc.cropngrid.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawTransform
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.models.Transformation
@@ -65,6 +90,8 @@ val Context.testBitmap: Bitmap
     get() {
         return BitmapFactory.decodeStream(resources.assets.open("test_image.png"))
     }
+
+internal const val ROTATION_CONST = (Math.PI / 180f).toFloat()
 
 fun DrawTransform.translate(vector: Vector) {
     translate(vector.x, vector.y)
@@ -139,6 +166,26 @@ fun Offset.transform(pivot: Offset = Offset(0f, 0f), transformation: Transformat
     )
 }
 
+
+fun DrawScope.drawTextOverlay(
+    text: String,
+    textMeasurer: TextMeasurer
+) {
+    val size = this.size
+
+    val textLayoutResult: TextLayoutResult =
+        textMeasurer.measure(
+            text = AnnotatedString(text),
+            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+        )
+
+    val middle = Offset(size.width / 2, size.height / 2)
+    val offset = Offset(textLayoutResult.size.width / 2f, textLayoutResult.size.height /2f)
+    val textSize = textLayoutResult.size.toSize()
+    val grayTransparent = Color.Gray.copy(alpha = 0.7f)
+    drawRect(grayTransparent, middle - offset, textSize)
+    drawText(textLayoutResult, Color.White, topLeft = middle - offset)
+}
 
 // Grid
 
@@ -240,21 +287,18 @@ fun DrawScope.drawGrid(gridCoordinates: Rect, gridParameters: GridParameters) {
 /**
  * Get the crop grid as a list of cell (Rect)
  */
-fun getCropGrid(gridCoordinates: Rect, gridParameters: GridParameters): List<Rect> {
+fun getCropGrid(gridCoordinates: Rect, gridParameters: GridParameters): List<List<Rect>> {
     val horizontalStep = gridCoordinates.width / gridParameters.columnNumber
     val verticalStep = gridCoordinates.height / gridParameters.rowNumber
-    val areas = mutableListOf<Rect>()
-    for (i in 0 until gridParameters.rowNumber) {
-        for (j in 0 until gridParameters.columnNumber) {
-            areas.add(
-                Rect(
-                    gridCoordinates.left + j * horizontalStep,
-                    gridCoordinates.top + i * verticalStep,
-                    gridCoordinates.left + (j + 1) * horizontalStep,
-                    gridCoordinates.top + (i + 1) * verticalStep
-                )
+
+    return (0..<gridParameters.rowNumber).map { rowNumber ->
+        (0..<gridParameters.columnNumber).map { columnNumber ->
+            Rect(
+                gridCoordinates.left + columnNumber * horizontalStep,
+                gridCoordinates.top + rowNumber * verticalStep,
+                gridCoordinates.left + (columnNumber + 1) * horizontalStep,
+                gridCoordinates.top + (rowNumber + 1) * verticalStep
             )
         }
     }
-    return areas
 }

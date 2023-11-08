@@ -13,43 +13,46 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.Objects
+import javax.inject.Inject
 
 
 interface PictureRepository {
-    suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Boolean
+    suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri?
 }
-class PictureRepositoryImpl: PictureRepository {
+class PictureRepositoryImpl @Inject constructor(): PictureRepository {
 
-    override suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Boolean {
+    override suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri? {
         return if (SDK_INT >= Build.VERSION_CODES.Q) {
             try {
                 saveImageInAndroidApi29AndAbove(resolver, bitmap, name)
-                true
             } catch (e: Exception) {
-                //show error to user that operatoin failed
+                // Todo : what to do here
                 println(e)
-                false
+                null
             }
         } else {
-            saveImageInAndroidApi28AndBelow(bitmap, name)
+            try {
+                saveImageInAndroidApi28AndBelow(bitmap, name)
+            } catch (e: Exception) {
+                // Todo : what to do here
+                println(e)
+                null
+            }
         }
     }
-    private fun saveImageInAndroidApi28AndBelow(bitmap: Bitmap, name: String): Boolean {
+
+    @Throws(IOException::class)
+    private fun saveImageInAndroidApi28AndBelow(bitmap: Bitmap, name: String): Uri {
         val fos: OutputStream
         val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString()
         val image = File(imagesDir, "$name.png")
-        try {
-            fos = FileOutputStream(image)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-            Objects.requireNonNull<OutputStream>(fos).close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            //isSuccess = false;
-            return false
-        }
-        //isSuccess = true;
-        return true
+        fos = FileOutputStream(image)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        Objects.requireNonNull<OutputStream>(fos).close()
+
+        return Uri.fromFile(image)
     }
+
     @Throws(IOException::class)
     fun saveImageInAndroidApi29AndAbove(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri {
         val values = ContentValues()
@@ -63,20 +66,16 @@ class PictureRepositoryImpl: PictureRepository {
             val contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
             uri = resolver.insert(contentUri, values)
             if (uri == null) {
-                //isSuccess = false;
                 throw IOException("Failed to create new MediaStore record.")
             }
             resolver.openOutputStream(uri).use { stream ->
                 if (stream == null) {
-                    //isSuccess = false;
                     throw IOException("Failed to open output stream.")
                 }
                 if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
-                    //isSuccess = false;
                     throw IOException("Failed to save bitmap.")
                 }
             }
-            //isSuccess = true;
             uri
         } catch (e: IOException) {
             if (uri != null) {

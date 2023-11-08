@@ -3,7 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
-
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -41,7 +43,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
     packaging {
         resources {
@@ -52,21 +54,48 @@ android {
 
 dependencies {
 
+    val lottieVersion = "6.1.0"
+
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    implementation("com.google.dagger:hilt-android:2.48.1")
+    ksp("com.google.dagger:hilt-android-compiler:2.48.1")
+
+    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+
+
     implementation("com.google.android.engage:engage-core:1.3.1")
-    val nav_version = "2.7.4"
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.2")
+    val nav_version = "2.7.5"
+
+    val room_version = "2.6.0"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    ksp("androidx.room:room-compiler:$room_version")
+
+    implementation("androidx.room:room-ktx:$room_version")
+
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
 
     implementation(platform("com.google.firebase:firebase-bom:32.4.0"))
 
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
 
-
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.0")
-    implementation(platform("androidx.compose:compose-bom:2023.10.00"))
+    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")

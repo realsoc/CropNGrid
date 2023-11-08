@@ -1,6 +1,8 @@
 package com.realsoc.cropngrid.ui.screens
 
 import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -24,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,11 +47,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.realsoc.cropngrid.MainViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.realsoc.cropngrid.frame
 import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.minus
-import com.realsoc.cropngrid.toUri
 import com.realsoc.cropngrid.ui.Point
 import com.realsoc.cropngrid.ui.calculateGridArea
 import com.realsoc.cropngrid.ui.canvasTransformation
@@ -72,18 +74,39 @@ import com.realsoc.cropngrid.ui.toVector
 import com.realsoc.cropngrid.ui.transform
 import com.realsoc.cropngrid.ui.translate
 import com.realsoc.cropngrid.ui.vectorTo
-import kotlinx.coroutines.flow.filterIsInstance
+import com.realsoc.cropngrid.viewmodels.CropperViewModel
+import com.realsoc.cropngrid.viewmodels.CroppingUiState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.lang.Float.max
 
-// TODO problem for 2columns 5 row
 @Composable
-fun LoadBitmap(encodedUri: String, onLoaded: (Bitmap) -> Unit) {
+internal fun CropperRoute(
+    onCropComplete: (String) -> Unit,
+    coroutineScope: CoroutineScope,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CropperViewModel = hiltViewModel()
+) {
+    val croppingUiState by viewModel.croppingUiState.collectAsStateWithLifecycle()
+
+    CropperContent(
+        viewModel.pictureUri,
+        coroutineScope,
+        onBackClick,
+        croppingUiState,
+        viewModel::makeGrid,
+        onCropComplete,
+        modifier
+    )
+}
+@Composable
+fun LoadBitmap(uri: Uri, onLoaded: (Bitmap) -> Unit) {
     val context = LocalContext.current
 
-    LaunchedEffect(encodedUri) {
+    LaunchedEffect(uri) {
         with(context) {
-            contentResolver.getBitmap(encodedUri.toUri())
+            contentResolver.getBitmap(uri)
         }.let {
             onLoaded(it)
         }
@@ -91,26 +114,39 @@ fun LoadBitmap(encodedUri: String, onLoaded: (Bitmap) -> Unit) {
 }
 
 @Composable
-fun CropAppBar(viewModel: MainViewModel, modifier: Modifier = Modifier) {
-    val uiState: Screen.Crop by viewModel.uiState.filterIsInstance<Screen.Crop>().collectAsState(Screen.Crop(""))
+fun LoadName(uri: Uri, onLoaded: (String?) -> Unit) {
+    val context = LocalContext.current
 
-}
-
-@Composable
-fun CropBottomBar(viewModel: MainViewModel, modifier: Modifier = Modifier) {
-    val uiState: Screen.Crop by viewModel.uiState.filterIsInstance<Screen.Crop>().collectAsState(Screen.Crop(""))
-
+    LaunchedEffect(uri) {
+        with(context) {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                cursor.moveToFirst()
+                cursor.getString(nameIndex)
+            }
+        }.let {
+            println("Name retrieved : $it")
+            onLoaded(it)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CropContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
-
-    val uiState: Screen.Crop? by viewModel.uiState.filterIsInstance<Screen.Crop?>().collectAsState(null)
+fun CropperContent(
+    uri: Uri,
+    coroutineScope: CoroutineScope,
+    onBackClick: () -> Unit,
+    croppingUiState: CroppingUiState?,
+    onCrop: suspend (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
+    onCropComplete: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
 
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var name by remember { mutableStateOf<String?>(null) }
 
-    var pictureParts by remember { mutableStateOf<List<Rect>>(listOf()) }
+    var pictureParts by remember { mutableStateOf<List<List<Rect>>>(listOf()) }
 
     var coordinateSystem by remember { mutableStateOf(CoordinateSystem()) }
 
@@ -120,11 +156,15 @@ fun CropContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
     var showDialog by remember { mutableStateOf(false) }
 
-    uiState?.let { uiState ->
-        LoadBitmap(encodedUri = uiState.encodedUri) {
-            bitmap = it
-            coordinateSystem = coordinateSystem.withPivot(it.frame.center.toPoint())
-        }
+    val context = LocalContext.current
+
+    LoadBitmap(uri = uri) {
+        bitmap = it
+        coordinateSystem = coordinateSystem.withPivot(it.frame.center.toPoint())
+    }
+
+    LoadName(uri = uri) {
+        name = it
     }
 
     // Setup initial state when bitmap and grid area are loaded
@@ -157,9 +197,9 @@ fun CropContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 gridParameters = gridParameters,
                 onDismissRequest = { showDialog = false },
                 onConfirmCrop = {
+                    // TODO : crop in viewModel, show loading, on result jump to detail view or
                     showDialog = false
-                    // Todo : base name
-                    viewModel.cropImageInParts(it, pictureParts, coordinateSystem, "Toto")
+                    coroutineScope.launch { onCrop(it, gridArea, pictureParts, coordinateSystem, name) }
                 }
             )
         }
@@ -201,8 +241,6 @@ fun CropContent(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    val coroutineScope = rememberCoroutineScope()
-
                     BoxWithConstraints(
                         Modifier
                             .transformable(state = state)
