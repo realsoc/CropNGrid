@@ -51,6 +51,8 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -213,10 +215,16 @@ fun CropperScreen(
             restartHideControlsTimer()
         }
 
-        TopAppBar(title = { Text("Grid creator") },
-            navigationIcon = { IconButton(onClick = onBackClick) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
-            }},
+        TopAppBar(
+            title = { Text(
+                stringResource(R.string.grid_creator),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium)
+            ) },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+                }
+            },
         )
 
         DimensionLayout(
@@ -359,7 +367,9 @@ fun CropperScreen(
             CropNGridButton(
                 textId = R.string.make_the_grid,
                 onClick = { showDialog = true },
-                modifier = Modifier.align(Alignment.Center)
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(vertical = 32.dp)
                 )
         }
 

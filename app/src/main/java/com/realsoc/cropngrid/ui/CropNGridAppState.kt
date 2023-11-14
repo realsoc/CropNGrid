@@ -13,12 +13,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.realsoc.cropngrid.navigation.TopLevelDestination
-import com.realsoc.cropngrid.navigation.TopLevelDestination.GRID_LIST
-import com.realsoc.cropngrid.navigation.TopLevelDestination.HOME
+import com.realsoc.cropngrid.navigation.TopLevelDestination.*
 import com.realsoc.cropngrid.navigation.gridListNavigationRoute
 import com.realsoc.cropngrid.navigation.homeNavigationRoute
 import com.realsoc.cropngrid.navigation.navigateToGridList
 import com.realsoc.cropngrid.navigation.navigateToHome
+import com.realsoc.cropngrid.navigation.navigateToInfo
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -70,7 +70,7 @@ class CropNGridAppState(
         @Composable get() = shouldShowLateralControl && currentDestination.isTopLevelDestination()
 
 
-    val topLevelDestinations: List<TopLevelDestination> = TopLevelDestination.values().asList()
+    val topLevelDestinations: List<TopLevelDestination> = values().asList()
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
         // Todo? : back will close the app
@@ -84,6 +84,7 @@ class CropNGridAppState(
 
             when (topLevelDestination) {
                 HOME -> navController.navigateToHome()
+                INFO -> navController.navigateToInfo()
                 GRID_LIST -> navController.navigateToGridList()
             }
 
@@ -91,5 +92,5 @@ class CropNGridAppState(
 }
 
 @Stable
-fun NavDestination?.isTopLevelDestination() = TopLevelDestination.values()
+fun NavDestination?.isTopLevelDestination() = values()
     .any { topLevelDestination -> this?.route?.contains(topLevelDestination.name, true) ?: false }

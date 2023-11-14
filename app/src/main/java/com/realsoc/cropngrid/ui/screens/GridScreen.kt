@@ -9,7 +9,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -58,7 +58,6 @@ import com.realsoc.cropngrid.decode
 import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.models.GridUris
-import com.realsoc.cropngrid.size
 import com.realsoc.cropngrid.toUri
 import com.realsoc.cropngrid.ui.CropNGridIcons
 import com.realsoc.cropngrid.ui.components.DialogButtons
@@ -181,10 +180,14 @@ fun GridContent(
                     }, enabled = gridUiState is GridUiState.Success) {
                         Icon(imageVector = CropNGridIcons.FilledDownload, contentDescription = "Download")
                     }
+                    Spacer(modifier = Modifier.width(12.dp))
                 },
             )
             Column(modifier = Modifier.weight(1f)) {
-                Text("Description de ce qu'il faut faire")
+                Text(
+                    stringResource(R.string.post_on_insta),
+                    modifier = Modifier.padding(24.dp)
+                )
 
                 AnimatedVisibility(
                     visible = gridUiState is GridUiState.Success,
@@ -254,6 +257,8 @@ fun GridPicture(
             val maxWidthForItem = maxWidth / columnCount - columnCount * offset
             val maxHeightForItem = maxHeight / rowCount - rowCount * offset
 
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
             Column {
                 images.forEachIndexed { rowNumber, rowItems ->
@@ -274,7 +279,9 @@ fun GridPicture(
                                             drawContent()
                                             drawTextOverlay(
                                                 (itemCount - currentItemCount).toString(),
-                                                textMeasurer
+                                                textMeasurer,
+                                                onPrimaryColor,
+                                                primaryColor
                                             )
                                         }
                                         .clickable { onPartClick(pair.first) }

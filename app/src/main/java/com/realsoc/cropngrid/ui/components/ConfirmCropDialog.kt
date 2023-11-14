@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.realsoc.cropngrid.R
@@ -63,7 +64,10 @@ fun ConfirmCropDialog(
         Card(modifier.heightIn(max = maxHeight)) {
             Column(modifier = Modifier.padding(20.dp)) {
                 if (croppingUiState == null || croppingUiState is CroppingUiState.Loading) {
-                    Text(stringResource(R.string.crop_the_image_question), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(R.string.crop_the_image_question),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
+                    )
                     Spacer(Modifier.height(10.dp))
                     AnimatedContent(
                         modifier = Modifier
@@ -84,9 +88,12 @@ fun ConfirmCropDialog(
                 } else {
                     if (croppingUiState is CroppingUiState.Success) {
                         currentDismissRequest = { onCropComplete(croppingUiState.gridId) }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
                             Text(stringResource(R.string.success_cropping))
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(20.dp))
                             Button({ onCropComplete(croppingUiState.gridId) }) {
                                 Text(stringResource(R.string.go_to_grid))
                             }

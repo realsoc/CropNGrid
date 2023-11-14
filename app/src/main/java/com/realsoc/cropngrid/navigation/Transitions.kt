@@ -71,7 +71,11 @@ data class Transitions(
         transitionChain: EnterTransitionLambda
     ): EnterTransitionLambda {
         return {
+            println("going from ${initialState.destination.route} to ${targetState.destination.route}")
+            println("transition is $fromRoute to $toRoute")
+            println("...")
             if (initialState.destination.route == fromRoute && targetState.destination.route == toRoute) {
+                println("Will apply transition")
                 transitionToApply(this).plus(transitionChain(this))
             } else {
                 transitionChain(this)

@@ -1,5 +1,6 @@
 package com.realsoc.cropngrid.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -142,15 +144,21 @@ private fun CropNGridBottomBar(
                     Icon(
                         imageVector = destination.unselectedIcon,
                         contentDescription = null,
+                        modifier = Modifier.scale(1.2f)
                     )
                 },
                 selectedIcon = {
                     Icon(
                         imageVector = destination.selectedIcon,
                         contentDescription = null,
+                        modifier = Modifier.scale(1.2f)
                     )
                 },
-                label = { Text(stringResource(destination.iconTextId)) },
+                label = {
+                    Text(
+                        stringResource(destination.iconTextId),
+                        style = MaterialTheme.typography.bodyMedium
+                    ) },
             )
         }
     }

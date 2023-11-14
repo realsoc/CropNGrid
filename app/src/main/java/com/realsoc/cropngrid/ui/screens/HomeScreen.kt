@@ -26,8 +26,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
-import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -113,11 +113,8 @@ fun HomeContent(
         }
     }
 
-    Box(modifier) {
+    Box(modifier.fillMaxSize()) {
         Column(
-            Modifier
-                .fillMaxSize()
-                .padding(50.dp),
             horizontalAlignment = CenterHorizontally
         ) {
             Image(
@@ -125,19 +122,22 @@ fun HomeContent(
                 contentDescription = "Application logo",
                 modifier = Modifier
                     .width(100.dp)
+                    .padding(top = 32.dp)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(R.string.crop_the_img),
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black)
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold)
             )
-            Spacer(modifier = Modifier.weight(1f))
+
             Text(
                 text = stringResource(R.string.app_description_home),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium)
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium),
+                modifier = Modifier.padding(32.dp)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.weight(1f))
+
             val onStartButtonClicked = {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P
                     && !writeExternalStorageState.status.isGranted) {
@@ -153,14 +153,14 @@ fun HomeContent(
             CropNGridButton(
                 textId = R.string.start,
                 onClick = onStartButtonClicked,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(56.dp)
             )
         }
         Image(
             imageVector = ImageVector.vectorResource(id = R.drawable.hand_with_camera),
             contentDescription = "Hand taking a picture",
             modifier = Modifier
-                .align(CenterStart)
+                .align(BottomStart)
                 .padding(top = 40.dp)
         )
     }

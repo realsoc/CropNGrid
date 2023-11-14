@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 fun CropNGridButton(@StringRes textId: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(onClick = onClick,
         modifier = modifier
-            .padding(20.dp)) {
+    ) {
         Text(
             stringResource(textId),
             style = MaterialTheme.typography.titleMedium.copy(letterSpacing = TextUnit(1.5f, TextUnitType.Sp))

@@ -16,8 +16,8 @@ public val CropNGridIcons.FilledList: ImageVector
         }
         _filledList = ImageVector.Builder(
             name = "vector",
-            defaultWidth = 24.dp,
-            defaultHeight = 24.dp,
+            defaultWidth = 21.dp,
+            defaultHeight = 21.dp,
             viewportWidth = 37.96f,
             viewportHeight = 37.96f
         ).apply {

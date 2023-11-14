@@ -22,7 +22,9 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.ui.CropNGridIcons
+import com.realsoc.cropngrid.ui.icons.FilledInfo
 import com.realsoc.cropngrid.ui.icons.FilledList
+import com.realsoc.cropngrid.ui.icons.OutlinedInfo
 import com.realsoc.cropngrid.ui.icons.OutlinedList
 
 enum class TopLevelDestination(
@@ -36,6 +38,12 @@ enum class TopLevelDestination(
         unselectedIcon = Icons.Outlined.Home,
         iconTextId = R.string.home,
         titleTextId = R.string.home,
+    ),
+    INFO(
+        selectedIcon = CropNGridIcons.FilledInfo,
+        unselectedIcon = CropNGridIcons.OutlinedInfo,
+        iconTextId = R.string.info,
+        titleTextId = R.string.info,
     ),
     GRID_LIST(
         selectedIcon = CropNGridIcons.FilledList,

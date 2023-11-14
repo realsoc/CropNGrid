@@ -26,6 +26,7 @@ import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.models.Transformation
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.sin
 
 // Classes
@@ -146,24 +147,22 @@ fun Offset.transform(pivot: Offset = Offset(0f, 0f), transformation: Transformat
 
 fun DrawScope.drawTextOverlay(
     text: String,
-    textMeasurer: TextMeasurer
+    textMeasurer: TextMeasurer,
+    textColor: Color,
+    backgroundColor: Color
 ) {
     val size = this.size
-    val horizontalPadding = 8f
 
     val textLayoutResult: TextLayoutResult =
         textMeasurer.measure(
             text = AnnotatedString(text),
-            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         )
 
     val middle = Offset(size.width / 2, size.height / 2)
     val textOffset = Offset(textLayoutResult.size.width / 2f , textLayoutResult.size.height /2f)
-    val overlayOffset = textOffset + Size(horizontalPadding, 0f)
-    val overlaySize = textLayoutResult.size.toSize() + Size(2 * horizontalPadding, 0f)
-    val grayTransparent = Color.Gray.copy(alpha = 0.7f)
-    drawRect(grayTransparent, middle - overlayOffset, overlaySize)
-    drawText(textLayoutResult, Color.White, topLeft = middle - textOffset)
+    drawCircle(color = backgroundColor, radius = max(textLayoutResult.size.height.toFloat(), textLayoutResult.size.width.toFloat()))
+    drawText(textLayoutResult, textColor, topLeft = middle - textOffset)
 }
 
 

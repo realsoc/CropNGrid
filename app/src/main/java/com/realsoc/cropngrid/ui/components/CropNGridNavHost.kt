@@ -1,6 +1,5 @@
 package com.realsoc.cropngrid.ui.components
 
-import androidx.collection.forEach
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +11,8 @@ import com.realsoc.cropngrid.navigation.gridListScreen
 import com.realsoc.cropngrid.navigation.gridScreen
 import com.realsoc.cropngrid.navigation.homeNavigationRoute
 import com.realsoc.cropngrid.navigation.homeScreen
+import com.realsoc.cropngrid.navigation.infoNavigationRoute
+import com.realsoc.cropngrid.navigation.infoScreen
 import com.realsoc.cropngrid.navigation.leftToRightTransition
 import com.realsoc.cropngrid.navigation.navigateToCropper
 import com.realsoc.cropngrid.navigation.navigateToGrid
@@ -36,6 +37,22 @@ fun CropNGridNavHost(
             rightToLeftTransition(EaseOutCubic, 500)
         ).addTransition(
             gridListNavigationRoute,
+            homeNavigationRoute,
+            leftToRightTransition(EaseOutCubic, 500)
+        ).addTransition(
+            gridListNavigationRoute,
+            infoNavigationRoute,
+            leftToRightTransition(EaseOutCubic, 500)
+        ).addTransition(
+            infoNavigationRoute,
+            gridListNavigationRoute,
+            rightToLeftTransition(EaseOutCubic, 500)
+        ).addTransition(
+            homeNavigationRoute,
+            infoNavigationRoute,
+            rightToLeftTransition(EaseOutCubic, 500)
+        ).addTransition(
+            infoNavigationRoute,
             homeNavigationRoute,
             leftToRightTransition(EaseOutCubic, 500)
         )
@@ -76,6 +93,9 @@ fun CropNGridNavHost(
             onBackClick = {
                 navController.popBackStack()
             }
+        )
+        infoScreen(
+            onShowSnackbar = onShowSnackbar
         )
     }
 }

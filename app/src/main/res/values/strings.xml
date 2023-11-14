@@ -6,7 +6,8 @@
     <string name="permission_needed">The application requires the storage permission</string>
     <string name="plus">Plus</string>
     <string name="grant">Grant</string>
-    <string name="app_description_home">Tire uma nova foto ou escolha na galeria e faça um crop direto pro seu feed do instagram!</string>
+    <string name="app_description_home">Escolha uma foto da galeria e faça um crop direto pro feed do seu
+        Instagram!</string>
     <string name="start">Começar</string>
     <string name="crop_the_img">CropN\'Grid</string>
     <string name="title_home">Home</string>
@@ -23,4 +24,7 @@
     <string name="success_cropping">Success cropping</string>
     <string name="crop_the_image_question">Crop the image ?</string>
     <string name="make_the_grid">Make the grid</string>
+    <string name="post_on_insta">Pronto ! Agora é só selecionar a foto na ordem da postagem e compartilhar no seu Instagram !</string>
+    <string name="info">Info</string>
+    <string name="grid_creator">Grid creator</string>
 </resources>
