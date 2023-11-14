@@ -1,5 +1,6 @@
 package com.realsoc.cropngrid.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,17 +29,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.realsoc.cropngrid.R
+import com.realsoc.cropngrid.ui.components.CropNGridButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -51,6 +54,7 @@ internal fun HomeRoute(
    HomeContent(onCropRequested, onShowSnackbar, modifier)
 }
 
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeContent(
@@ -61,15 +65,18 @@ fun HomeContent(
 
     val coroutineScope = rememberCoroutineScope()
 
-    val context = LocalContext.current
+    val context: Context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { potentialUri ->
-            potentialUri?.let(onCropRequested) ?: println("No picture selected")
+            potentialUri?.let { uri ->
+                onCropRequested(uri)
+            } ?: println("No picture selected")
         }
     )
-    val externalStorageState = rememberPermissionState(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+
+    val writeExternalStorageState = rememberPermissionState(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
         if (it) {
             imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } else {
@@ -82,12 +89,14 @@ fun HomeContent(
                     context.startActivity(intent)
                 } else {
                     println("Recused STRONG")
+                    // TODO : here
                 }
             }
 
         }
-
     }
+
+
 
     var shouldDisplayRational by remember { mutableStateOf(false) }
 
@@ -95,9 +104,10 @@ fun HomeContent(
         if (shouldDisplayRational) {
             val snackBarResult = onShowSnackbar("Please accept rationnaly", "Accept")
             if (snackBarResult) {
-                externalStorageState.launchPermissionRequest()
+                writeExternalStorageState.launchPermissionRequest()
             } else {
                 println("Recused")
+                // todo : here
             }
             shouldDisplayRational = false
         }
@@ -127,25 +137,24 @@ fun HomeContent(
                 text = stringResource(R.string.app_description_home),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Medium)
             )
-            Spacer(modifier = Modifier.height(50.dp))
-            // TOdo : handle permission here
-            Button(
-                onClick = {
-                          if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P
-                              && !externalStorageState.status.isGranted) {
-                              if (externalStorageState.status.shouldShowRationale) {
-                                  shouldDisplayRational = true
-                              } else {
-                                  externalStorageState.launchPermissionRequest()
-                              }
-                          } else {
-                              imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                          }
-                             },
-                Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.start))
+            Spacer(modifier = Modifier.height(20.dp))
+            val onStartButtonClicked = {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P
+                    && !writeExternalStorageState.status.isGranted) {
+                    if (writeExternalStorageState.status.shouldShowRationale) {
+                        shouldDisplayRational = true
+                    } else {
+                        writeExternalStorageState.launchPermissionRequest()
+                    }
+                } else {
+                    imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
             }
+            CropNGridButton(
+                textId = R.string.start,
+                onClick = onStartButtonClicked,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
         Image(
             imageVector = ImageVector.vectorResource(id = R.drawable.hand_with_camera),
@@ -155,4 +164,8 @@ fun HomeContent(
                 .padding(top = 40.dp)
         )
     }
+}
+
+fun Offset.toIntOffset(): IntOffset {
+    return IntOffset(x.toInt(), y.toInt())
 }

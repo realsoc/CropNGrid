@@ -9,6 +9,7 @@ import androidx.navigation.NavBackStackEntry
 
 typealias ExitTransitionLambda = (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition)
 typealias EnterTransitionLambda = (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition)
+
 data class Transitions(
     val enterTransitionChain: EnterTransitionLambda,
     val exitTransitionChain: ExitTransitionLambda,
@@ -30,7 +31,7 @@ data class Transitions(
             transitions.popExitTransitionChain
         )
     }
-    fun addTransition(
+    private fun addTransition(
         fromRoute: String,
         toRoute: String,
         enterTransition: EnterTransitionLambda,
@@ -96,7 +97,7 @@ fun rightToLeftTransition(easing: Easing, duration: Int): Transitions = Transiti
 fun slideFromLeft(
     easing: Easing,
     duration: Int
-): AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition {
+): EnterTransitionLambda {
     return {
         slideIntoContainer(
             AnimatedContentTransitionScope.SlideDirection.End,
@@ -109,7 +110,7 @@ fun slideFromLeft(
 fun slideFromRight(
     easing: Easing,
     duration: Int
-): AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition {
+): EnterTransitionLambda {
     return {
         slideIntoContainer(
             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -121,7 +122,7 @@ fun slideFromRight(
 fun slideToLeft(
     easing: Easing,
     duration: Int
-): AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition {
+): ExitTransitionLambda {
     return {
         slideOutOfContainer(
             AnimatedContentTransitionScope.SlideDirection.Start,
@@ -133,7 +134,7 @@ fun slideToLeft(
 fun slideToRight(
     easing: Easing,
     duration: Int
-): AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition {
+): ExitTransitionLambda {
     return {
         slideOutOfContainer(
             AnimatedContentTransitionScope.SlideDirection.End,

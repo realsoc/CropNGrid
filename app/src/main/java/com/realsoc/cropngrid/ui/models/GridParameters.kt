@@ -69,8 +69,8 @@ data class GridParameters(
     }
 
     sealed class RatioMode {
-        object RatioForItem : RatioMode()
-        object RatioForImage : RatioMode()
+        data object RatioForItem : RatioMode()
+        data object RatioForImage : RatioMode()
     }
 
     companion object {

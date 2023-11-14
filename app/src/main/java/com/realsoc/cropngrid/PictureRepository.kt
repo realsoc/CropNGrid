@@ -1,13 +1,16 @@
 package com.realsoc.cropngrid
 
+import android.app.Application
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.core.content.FileProvider
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -17,14 +20,21 @@ import javax.inject.Inject
 
 
 interface PictureRepository {
-    suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri?
+    suspend fun saveImage(context: Application, bitmap: Bitmap, name: String, sharable: Boolean
+    = false): Uri?
 }
 class PictureRepositoryImpl @Inject constructor(): PictureRepository {
 
-    override suspend fun saveImage(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri? {
+    override suspend fun saveImage(context: Application, bitmap: Bitmap, name: String,
+                                   sharable: Boolean):
+            Uri? {
         return if (SDK_INT >= Build.VERSION_CODES.Q) {
             try {
-                saveImageInAndroidApi29AndAbove(resolver, bitmap, name)
+                if (sharable) {
+                    savePublicImageInAndroidApi29AndAbove(context.contentResolver, bitmap, name)
+                } else {
+                    savePrivateImage(context, bitmap, name)
+                }
             } catch (e: Exception) {
                 // Todo : what to do here
                 println(e)
@@ -32,7 +42,11 @@ class PictureRepositoryImpl @Inject constructor(): PictureRepository {
             }
         } else {
             try {
-                saveImageInAndroidApi28AndBelow(bitmap, name)
+                if (sharable) {
+                    savePublicImageInAndroidApi28AndBelow(bitmap, name)
+                } else {
+                    savePrivateImage(context, bitmap, name)
+                }
             } catch (e: Exception) {
                 // Todo : what to do here
                 println(e)
@@ -42,9 +56,9 @@ class PictureRepositoryImpl @Inject constructor(): PictureRepository {
     }
 
     @Throws(IOException::class)
-    private fun saveImageInAndroidApi28AndBelow(bitmap: Bitmap, name: String): Uri {
+    private fun savePublicImageInAndroidApi28AndBelow(bitmap: Bitmap, name: String): Uri {
         val fos: OutputStream
-        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString()
+        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
         val image = File(imagesDir, "$name.png")
         fos = FileOutputStream(image)
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
@@ -54,7 +68,7 @@ class PictureRepositoryImpl @Inject constructor(): PictureRepository {
     }
 
     @Throws(IOException::class)
-    fun saveImageInAndroidApi29AndAbove(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri {
+    private fun savePublicImageInAndroidApi29AndAbove(resolver: ContentResolver, bitmap: Bitmap, name: String): Uri {
         val values = ContentValues()
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
         values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
@@ -83,5 +97,15 @@ class PictureRepositoryImpl @Inject constructor(): PictureRepository {
             }
             throw e
         }
+    }
+
+    private fun savePrivateImage(context: Context, bitmap: Bitmap, name: String): Uri {
+        val fos: OutputStream
+        val image = File(context.filesDir, "$name.png")
+        fos = FileOutputStream(image)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        Objects.requireNonNull<OutputStream>(fos).close()
+
+        return FileProvider.getUriForFile(context, "com.realsoc.cropngrid.provider", image)
     }
 }

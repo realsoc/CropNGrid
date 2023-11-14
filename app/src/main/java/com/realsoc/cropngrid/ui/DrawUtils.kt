@@ -3,48 +3,25 @@ package com.realsoc.cropngrid.ui
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawTransform
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import com.realsoc.cropngrid.plus
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.models.Transformation
@@ -172,6 +149,7 @@ fun DrawScope.drawTextOverlay(
     textMeasurer: TextMeasurer
 ) {
     val size = this.size
+    val horizontalPadding = 8f
 
     val textLayoutResult: TextLayoutResult =
         textMeasurer.measure(
@@ -180,12 +158,14 @@ fun DrawScope.drawTextOverlay(
         )
 
     val middle = Offset(size.width / 2, size.height / 2)
-    val offset = Offset(textLayoutResult.size.width / 2f, textLayoutResult.size.height /2f)
-    val textSize = textLayoutResult.size.toSize()
+    val textOffset = Offset(textLayoutResult.size.width / 2f , textLayoutResult.size.height /2f)
+    val overlayOffset = textOffset + Size(horizontalPadding, 0f)
+    val overlaySize = textLayoutResult.size.toSize() + Size(2 * horizontalPadding, 0f)
     val grayTransparent = Color.Gray.copy(alpha = 0.7f)
-    drawRect(grayTransparent, middle - offset, textSize)
-    drawText(textLayoutResult, Color.White, topLeft = middle - offset)
+    drawRect(grayTransparent, middle - overlayOffset, overlaySize)
+    drawText(textLayoutResult, Color.White, topLeft = middle - textOffset)
 }
+
 
 // Grid
 

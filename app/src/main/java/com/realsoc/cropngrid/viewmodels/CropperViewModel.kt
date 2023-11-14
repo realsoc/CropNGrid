@@ -3,6 +3,7 @@ package com.realsoc.cropngrid.viewmodels
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -15,11 +16,16 @@ import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.navigation.CropperArgs
 import com.realsoc.cropngrid.safeRecycle
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
+import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.scale
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,9 +43,13 @@ class CropperViewModel @Inject constructor(
     private val cropArgs: CropperArgs = CropperArgs(savedStateHandle)
 
     private val _croppingUiState = MutableStateFlow<CroppingUiState?>(null)
-    val croppingUiState: StateFlow<CroppingUiState?> = _croppingUiState
+
+    val croppingUiState: StateFlow<CroppingUiState?> = _croppingUiState.asStateFlow()
 
     val pictureUri: Uri = cropArgs.uri
+
+    private val _gridParametersState: MutableStateFlow<GridParameters> = MutableStateFlow(GridParameters())
+    val gridParametersState: StateFlow<GridParameters> = _gridParametersState.asStateFlow()
 
     suspend fun makeGrid(
         source: Bitmap,
@@ -48,7 +58,6 @@ class CropperViewModel @Inject constructor(
         pCoordinateSystem: CoordinateSystem,
         baseName: String?
     ) {
-        println("Starting cropping")
         viewModelScope.launch {
             _croppingUiState.update { CroppingUiState.Loading }
 
@@ -65,7 +74,7 @@ class CropperViewModel @Inject constructor(
                     val miniatureBitmap = createBitmapOfArea(source, miniatureArea, coordinateSystem)
                     val miniatureUri = checkNotNull(
                         pictureRepository.saveImage(
-                            getApplication<Application>().contentResolver,
+                            getApplication(),
                             miniatureBitmap,
                             suffixName + "MINIATURE"
                         )
@@ -85,10 +94,10 @@ class CropperViewModel @Inject constructor(
                     }
                     val partEncodedUris = partBitmap.mapIndexed { rowNumber, row ->
                         row.mapIndexed { columnNumber, bitmap ->
-                            val name = "$suffixName$rowNumber:$columnNumber"
+                            val name = "$suffixName$rowNumber" + "_$columnNumber"
                             checkNotNull(
                                 pictureRepository.saveImage(
-                                    getApplication<Application>().contentResolver,
+                                    getApplication(),
                                     bitmap,
                                     name
                                 )
@@ -106,18 +115,21 @@ class CropperViewModel @Inject constructor(
                         partEncodedUris
                     )
 
-                    println("Cropped grid : $grid")
 
                     gridRepository.addGrid(grid)
                     _croppingUiState.update { CroppingUiState.Success(gridId) }
                     miniatureBitmap.safeRecycle()
-                    partBitmap.map { it.map { it.safeRecycle() } }
+                    partBitmap.map { it.map { bitmap -> bitmap.safeRecycle() } }
                 } catch (e: Exception) {
-                    println("damn an error")
-                    println(e)
                     _croppingUiState.update { CroppingUiState.Error }
                 }
             }
+        }
+    }
+
+    fun updateGridParameters(gridParameters: GridParameters) {
+        viewModelScope.launch {
+            _gridParametersState.update { gridParameters }
         }
     }
 }

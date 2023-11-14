@@ -3,53 +3,59 @@ package com.realsoc.cropngrid.ui.screens
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.frame
 import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.minus
@@ -57,11 +63,9 @@ import com.realsoc.cropngrid.ui.Point
 import com.realsoc.cropngrid.ui.calculateGridArea
 import com.realsoc.cropngrid.ui.canvasTransformation
 import com.realsoc.cropngrid.ui.components.ConfirmCropDialog
+import com.realsoc.cropngrid.ui.components.CropNGridButton
 import com.realsoc.cropngrid.ui.components.DimensionLayout
-import com.realsoc.cropngrid.ui.components.GridParametersLayout
-import com.realsoc.cropngrid.ui.components.SheetDragHandle
 import com.realsoc.cropngrid.ui.div
-import com.realsoc.cropngrid.ui.drawGrid
 import com.realsoc.cropngrid.ui.drawGridArea
 import com.realsoc.cropngrid.ui.getCropGrid
 import com.realsoc.cropngrid.ui.minus
@@ -71,80 +75,58 @@ import com.realsoc.cropngrid.ui.models.Transformation
 import com.realsoc.cropngrid.ui.scale
 import com.realsoc.cropngrid.ui.toPoint
 import com.realsoc.cropngrid.ui.toVector
-import com.realsoc.cropngrid.ui.transform
-import com.realsoc.cropngrid.ui.translate
 import com.realsoc.cropngrid.ui.vectorTo
 import com.realsoc.cropngrid.viewmodels.CropperViewModel
 import com.realsoc.cropngrid.viewmodels.CroppingUiState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Float.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 @Composable
 internal fun CropperRoute(
-    onCropComplete: (String) -> Unit,
     coroutineScope: CoroutineScope,
+    onCropComplete: (String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CropperViewModel = hiltViewModel()
+    viewModel: CropperViewModel = hiltViewModel(),
 ) {
     val croppingUiState by viewModel.croppingUiState.collectAsStateWithLifecycle()
+    val gridParameters by viewModel.gridParametersState.collectAsStateWithLifecycle()
 
-    CropperContent(
-        viewModel.pictureUri,
-        coroutineScope,
-        onBackClick,
-        croppingUiState,
-        viewModel::makeGrid,
-        onCropComplete,
-        modifier
+    CropperScreen(
+        uri = viewModel.pictureUri,
+        coroutineScope = coroutineScope,
+        gridParameters = gridParameters,
+        onGridParameters = { viewModel.updateGridParameters(it) },
+        onBackClick = onBackClick,
+        croppingUiState = croppingUiState,
+        onCrop = viewModel::makeGrid,
+        onCropComplete = onCropComplete,
+        modifier = modifier
     )
-}
-@Composable
-fun LoadBitmap(uri: Uri, onLoaded: (Bitmap) -> Unit) {
-    val context = LocalContext.current
-
-    LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.getBitmap(uri)
-        }.let {
-            onLoaded(it)
-        }
-    }
-}
-
-@Composable
-fun LoadName(uri: Uri, onLoaded: (String?) -> Unit) {
-    val context = LocalContext.current
-
-    LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                cursor.moveToFirst()
-                cursor.getString(nameIndex)
-            }
-        }.let {
-            println("Name retrieved : $it")
-            onLoaded(it)
-        }
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CropperContent(
+fun CropperScreen(
     uri: Uri,
     coroutineScope: CoroutineScope,
+    gridParameters: GridParameters,
+    onGridParameters: (GridParameters) -> Unit,
     onBackClick: () -> Unit,
     croppingUiState: CroppingUiState?,
     onCrop: suspend (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
     onCropComplete: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var name by remember { mutableStateOf<String?>(null) }
+
+    var job: Job = remember { Job() }
 
     var pictureParts by remember { mutableStateOf<List<List<Rect>>>(listOf()) }
 
@@ -152,15 +134,30 @@ fun CropperContent(
 
     var gridArea by remember { mutableStateOf(Rect(0f, 0f, 100f, 100f)) }
 
-    var gridParameters by remember { mutableStateOf(GridParameters()) }
-
     var showDialog by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+    var showControls by remember { mutableStateOf(false) }
+
+    val restartHideControlsTimer = {
+        job.cancel()
+        job = coroutineScope.launch {
+            showControls = true
+            delay(1500)
+            showControls = false
+        }
+    }
+
+    val controlsInUse = {
+        job.cancel()
+        job = coroutineScope.launch {
+            showControls = true
+        }
+    }
 
     LoadBitmap(uri = uri) {
         bitmap = it
         coordinateSystem = coordinateSystem.withPivot(it.frame.center.toPoint())
+        restartHideControlsTimer()
     }
 
     LoadName(uri = uri) {
@@ -168,10 +165,10 @@ fun CropperContent(
     }
 
     // Setup initial state when bitmap and grid area are loaded
-    LaunchedEffect(bitmap, gridArea) {
+    LaunchedEffect(bitmap) {
         bitmap?.let { bitmap ->
             // The last scale allowing the image to fit entirely in the grid
-            val minScale = max(gridArea.width / bitmap.width, gridArea.height / bitmap.height)
+            val minScale = min(gridArea.width / bitmap.width, gridArea.height / bitmap.height)
             coordinateSystem = coordinateSystem.withMinScale(minScale)
             animateToInitialState(
                 bitmap.frame,
@@ -195,104 +192,211 @@ fun CropperContent(
                 coordinateSystem = coordinateSystem,
                 gridArea = gridArea,
                 gridParameters = gridParameters,
+                onCropComplete,
+                croppingUiState,
                 onDismissRequest = { showDialog = false },
                 onConfirmCrop = {
-                    // TODO : crop in viewModel, show loading, on result jump to detail view or
-                    showDialog = false
                     coroutineScope.launch { onCrop(it, gridArea, pictureParts, coordinateSystem, name) }
                 }
             )
         }
     }
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-    BottomSheetScaffold(
-        sheetDragHandle = { SheetDragHandle(state = bottomSheetScaffoldState) },
-        scaffoldState = bottomSheetScaffoldState,
-        sheetContent = {
-            GridParametersLayout(
-                gridParameters = gridParameters,
-                onGridParameters = { callback -> gridParameters = callback(gridParameters) },
-                modifier = Modifier.padding(20.dp)
+    Column(
+        modifier
+            .fillMaxSize()) {
+        val transformationState = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
+            coordinateSystem = coordinateSystem.withChange(
+                zoomChange,
+                offsetChange.toVector(),
+                rotationChange
             )
+            restartHideControlsTimer()
         }
-    ) {
-        Column(modifier.fillMaxSize()) {
-            val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-                coordinateSystem = coordinateSystem.withChange(
-                    zoomChange,
-                    offsetChange.toVector(),
-                    rotationChange
-                )
-            }
 
-            DimensionLayout(
+        TopAppBar(title = { Text("Grid creator") },
+            navigationIcon = { IconButton(onClick = onBackClick) {
+                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+            }},
+        )
+
+        DimensionLayout(
+            Modifier
+                .weight(1f)
+        ) {
+            Box(
                 Modifier
-                    .weight(1f)
-                    .clipToBounds()
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .drawWithContent {
+                        drawContent()
+                        // Calculate grid area was here before. But was recalculated on every frame
+                        drawGridArea(gridArea, gridParameters)
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Box(
+                BoxWithConstraints(
                     Modifier
-                        .fillMaxSize()
-                        .background(Color.Black)
-                        .drawWithContent {
-                            drawContent()
-                            // Calculate grid area was here before. But was recalculated on every frame
-                            drawGridArea(gridArea, gridParameters)
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    BoxWithConstraints(
-                        Modifier
-                            .transformable(state = state)
-                            .pointerInput(Unit) {
-                                this.detectTapGestures(
-                                    onDoubleTap = {
-                                        coroutineScope.launch {
-                                            animateToInitialState(
-                                                bitmap!!.frame,
-                                                gridArea,
-                                                coordinateSystem.pivot,
-                                                coordinateSystem.transformation
-                                            ) { state, _ ->
-                                                coordinateSystem = coordinateSystem.withTransformation(state)
-                                            }
+                        .transformable(state = transformationState)
+                        .pointerInput(Unit) {
+                            this.detectTapGestures(
+                                onPress = {
+                                    controlsInUse()
+                                    awaitRelease()
+                                    restartHideControlsTimer()
+                                },
+                                onDoubleTap = {
+                                    coroutineScope.launch {
+                                        animateToInitialState(
+                                            bitmap!!.frame,
+                                            gridArea,
+                                            coordinateSystem.pivot,
+                                            coordinateSystem.transformation
+                                        ) { state, _ ->
+                                            coordinateSystem = coordinateSystem.withTransformation(state)
                                         }
                                     }
-                                )
-                            }
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        bitmap?.let { bitmap ->
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                clipRect(0f, 0f, constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()) {
-                                    withTransform(canvasTransformation(coordinateSystem)) {
-                                        drawImage(bitmap.asImageBitmap())
-                                    }
+                                }
+                            )
+                        }
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    bitmap?.let { bitmap ->
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            clipRect(0f, 0f, constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()) {
+                                withTransform(canvasTransformation(coordinateSystem)) {
+                                    drawImage(bitmap.asImageBitmap())
                                 }
                             }
                         }
                     }
                 }
-                // Calculate grid was isolated here to calculate only when it's required
+            }
+            // Calculate grid was isolated here to calculate only when it's required
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                gridArea = calculateGridArea(
+                    gridParameters,
+                    constraints.maxWidth.toFloat(),
+                    constraints.maxHeight.toFloat()
+                )
+            }
+            AnimatedVisibility(
+                visible = showControls,
+                enter = fadeIn(animationSpec = tween(500)),
+                exit = fadeOut(animationSpec = tween(500))
+            ) {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    gridArea = calculateGridArea(
-                        gridParameters,
-                        constraints.maxWidth.toFloat(),
-                        constraints.maxHeight.toFloat()
-                    )
+                    with(LocalDensity.current) {
+                        val verticalMargin = (size.height * 0.10f).toDp()
+                        val horizontalMargin = (size.width * 0.10f).toDp()
+                        val sliderPadding = 30.dp
+                        var columnSliderPosition by remember { mutableFloatStateOf(gridParameters.columnNumber.toFloat()) }
+                        val rowSliderWidth = 400.dp
+                        val columnSliderWidth = rowSliderWidth * 3/5 + sliderPadding
+                        val columnInteractionSource = remember { MutableInteractionSource() }
+                        val rowInteractionSource = remember { MutableInteractionSource() }
+                        Slider(
+                            value = gridParameters.columnNumber.toFloat(),
+                            onValueChange = { newValue ->
+                                controlsInUse()
+                                columnSliderPosition = newValue
+                                val columnNumber = newValue.roundToInt()
+                                onGridParameters(gridParameters.copy(columnNumber = columnNumber))
+                            },
+                            onValueChangeFinished = { restartHideControlsTimer() },
+                            steps = 1,
+                            valueRange = 1f..3f,
+                            modifier = Modifier
+                                .width(columnSliderWidth)
+                                .align(Alignment.BottomCenter)
+                                .padding(horizontal = sliderPadding)
+                                .padding(bottom = verticalMargin),
+                            interactionSource = columnInteractionSource,
+                            thumb = {
+                                SliderDefaults.Thumb(
+                                    interactionSource = columnInteractionSource,
+                                    thumbSize = DpSize(80.dp, 80.dp),
+                                    modifier = Modifier.scale(0.3f)
+                                )
+                            }
+                        )
+                        var rowSliderPosition by remember { mutableFloatStateOf(gridParameters.rowNumber.toFloat()) }
+                        Slider(
+                            value = gridParameters.rowNumber.toFloat(),
+                            onValueChange = { newValue ->
+                                controlsInUse()
+                                rowSliderPosition = newValue
+                                val rowNumber = rowSliderPosition.roundToInt()
+                                onGridParameters(gridParameters.copy(rowNumber = rowNumber))
+                            },
+                            onValueChangeFinished = { restartHideControlsTimer() },
+                            steps = 3,
+                            valueRange = 1f..5f,
+                            modifier = Modifier
+                                .width(rowSliderWidth)
+                                .padding(horizontal = sliderPadding)
+                                .rotate(90f)
+                                .align(Alignment.Center)
+                                .offset(y = -(size.width / 2).toDp() + horizontalMargin),
+                            interactionSource = rowInteractionSource,
+                            thumb = {
+                                SliderDefaults.Thumb(
+                                    interactionSource = rowInteractionSource,
+                                    thumbSize = DpSize(80.dp, 80.dp),
+                                    modifier = Modifier.scale(0.3f)
+                                )
+                            }
+                        )
+                    }
+
                 }
             }
-            val offset = LocalDensity.current.run { bottomSheetScaffoldState.bottomSheetState.requireOffset().toDp() }
-            FloatingActionButton(modifier = Modifier
-                .offset(y = (-100).dp)
-                .align(Alignment.End),
-                onClick = { showDialog = true }) {
-                Icon(Icons.Filled.Check, "")
-            }
+
         }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)) {
+            CropNGridButton(
+                textId = R.string.make_the_grid,
+                onClick = { showDialog = true },
+                modifier = Modifier.align(Alignment.Center)
+                )
+        }
+
     }
 
+}
+
+@Composable
+fun LoadBitmap(uri: Uri, onLoaded: (Bitmap) -> Unit) {
+    val context = LocalContext.current
+
+    LaunchedEffect(uri) {
+        with(context) {
+            contentResolver.getBitmap(uri)
+        }.let {
+            onLoaded(it)
+        }
+    }
+}
+
+@Composable
+fun LoadName(uri: Uri, onLoaded: (String?) -> Unit) {
+    val context = LocalContext.current
+
+    LaunchedEffect(uri) {
+        with(context) {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                cursor.moveToFirst()
+                cursor.getString(nameIndex).let {
+                    it.substring(0, it.lastIndexOf("."));
+                }
+            }
+        }.let {
+            onLoaded(it)
+        }
+    }
 }
 
 
@@ -336,57 +440,5 @@ fun getFitAroundTransformation(imageFrame: Rect, gridArea: Rect, pivot: Point): 
     return Transformation(0f, centeringTranslation, scaleToFit)
 }
 
-
-// BS after here
-
-// TOdo : use it to create an answer to stackoverflow
-@Composable
-fun BoxWithConstraintsScope.ShowCropped(
-    modifier: Modifier = Modifier,
-    bitmap: Bitmap,
-    transformation: Transformation,
-    origin: Offset,
-    gridParameters: GridParameters,
-    pivot: Offset
-) {
-    val size = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
-    val zero = Offset(0f, 0f)
-
-    Canvas(
-        modifier = modifier
-            .fillMaxSize()
-            .align(Alignment.Center)
-    ) {
-
-        clipRect(0f, 0f, size.width, size.height) {
-            drawRect(Color.Black, zero, size)
-            //println("bottom transformation state : $transformationState, pivot $pivot ")
-            withTransform({
-                translate(transformation.translation)
-                translate(-origin.x, -origin.y)
-
-                rotate(transformation.rotation, pivot)
-                scale(transformation.scale, pivot)
-            }) {
-                drawImage(bitmap.asImageBitmap())
-            }
-            drawGrid(Rect(zero, size), gridParameters = gridParameters)
-
-            val topLeft = Offset(0f, 0f).transform(pivot, transformation) - origin
-            val topRight = Offset(bitmap.width.toFloat(), 0f).transform(pivot, transformation) - origin
-            val bottomLeft = Offset(0f, bitmap.height.toFloat()).transform(pivot, transformation) -
-                    origin
-            val bottomRight = Offset(bitmap.width.toFloat(), bitmap.height.toFloat()).transform(
-                pivot,
-                transformation
-            ) - origin
-
-            drawLine(Color.Red, start = topLeft, end = topRight, strokeWidth = 5f)
-            drawLine(Color.Red, start = bottomRight, end = topRight, strokeWidth = 5f)
-            drawLine(Color.Red, start = bottomRight, end = bottomLeft, strokeWidth = 5f)
-            drawLine(Color.Red, start = topLeft, end = bottomLeft, strokeWidth = 5f)
-        }
-    }
-}
 
 fun Rect.getScaleToFit(other: Rect): Float = max(other.width / width, other.height / height)

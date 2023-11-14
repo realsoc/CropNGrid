@@ -25,7 +25,7 @@ import androidx.core.view.WindowCompat
 annotation class ThemePreviews
 
 private val DarkColorScheme = darkColorScheme(
-    primary = LimonSiciliano,
+    primary = Lemon,
     onPrimary = Black,
     background = Black,
     surface = Black,
@@ -35,7 +35,7 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = Purple,
     onPrimary = White,
-    background = LimonSiciliano,
+    background = Lemon,
     surface = Purple,
     onSurface = White
 

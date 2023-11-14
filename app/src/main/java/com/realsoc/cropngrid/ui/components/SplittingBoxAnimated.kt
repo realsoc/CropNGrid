@@ -35,10 +35,10 @@ fun SplittingBoxAnimated(
         val rowCount = toShowLeftToRightTopToBottom.size
         val columnCount = toShowLeftToRightTopToBottom.first().size
         val boxSize = toShowLeftToRightTopToBottom.first().first().frame
-            BoxWithConstraints(
-                modifier
-                    .fillMaxSize()
-            ) {
+        BoxWithConstraints(
+            modifier
+                .fillMaxSize()
+        ) {
                 val maxOffset = 60f
 
                 val infiniteTransition = rememberInfiniteTransition(label = "box splitting transition")

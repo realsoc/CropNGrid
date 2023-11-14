@@ -83,8 +83,8 @@ class CropNGridAppState(
             }
 
             when (topLevelDestination) {
-                HOME -> navController.navigateToHome(topLevelNavOptions)
-                GRID_LIST -> navController.navigateToGridList(topLevelNavOptions)
+                HOME -> navController.navigateToHome()
+                GRID_LIST -> navController.navigateToGridList()
             }
 
     }

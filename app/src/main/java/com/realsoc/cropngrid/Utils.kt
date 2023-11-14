@@ -85,6 +85,10 @@ operator fun Size.minus(other: Size): Offset {
     return Offset(width - other.width, height - other.height)
 }
 
+operator fun Size.plus(other: Size): Size {
+    return Size(width + other.width, height + other.height)
+}
+
 suspend fun createBitmapList(
     source: Bitmap,
     areas: List<List<Rect>>,
