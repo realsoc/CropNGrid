@@ -9,6 +9,10 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+        }
+    }
     namespace = "com.realsoc.cropngrid"
     compileSdk = 34
 
@@ -26,8 +30,8 @@ android {
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        getByName("release") {
+            isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
@@ -53,71 +57,69 @@ android {
 }
 
 dependencies {
-    val lottieVersion = "6.1.0"
-    val daggerVersion = "2.48.1"
+    // androidx.* version number
     val navVersion = "2.7.5"
     val roomVersion = "2.6.0"
-    val composeBom = "2023.03.00"
-    val coilVersion = "2.5.0"
-    val gsonVersion = "2.10.1"
-    val firebaseBom = "32.4.0"
+    val splashScreenVersion = "1.0.1"
+    val material3Version = "1.1.2"
+    val datastoreVersion = "1.0.0"
+    val activityComposeVersion = "1.8.0"
     val lifecycleVersion = "2.6.2"
+
+    val composeBom = "2023.10.01"
+
+    // com.google.* version number
+    val gsonVersion = "2.10.1"
     val hiltComposeVersion = "1.1.0"
     val accompagnistVersion = "0.32.0"
-    val androidKtxVersion = "1.12.0"
-    val splashScreenVersion = "1.0.1"
+    val daggerVersion = "2.48.1"
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    val firebaseBom = "32.5.0"
 
-
-    implementation("io.coil-kt:coil-compose:$coilVersion")
-
-    implementation("com.google.dagger:hilt-android:$daggerVersion")
-    ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
-
-    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+    // third parties version number
+    val coilVersion = "2.5.0"
+    val lottieVersion = "6.1.0"
 
 
-    implementation("androidx.compose.material3:material3-window-size-class:1.1.2")
-
-    implementation("androidx.room:room-runtime:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-
-    implementation("com.google.code.gson:gson:$gsonVersion")
-
-    ksp("androidx.room:room-compiler:$roomVersion")
-
-    implementation("androidx.room:room-ktx:$roomVersion")
-
-    implementation("androidx.hilt:hilt-navigation-compose:$hiltComposeVersion")
-
-    implementation("androidx.navigation:navigation-compose:$navVersion")
-
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
-
-    implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
-
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-
-    implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
-    implementation("androidx.core:core-ktx:$androidKtxVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
-    implementation("androidx.activity:activity-compose:1.8.0")
-    implementation(platform("androidx.compose:compose-bom:$composeBom"))
-    androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
-
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    // Todo : use ?
-    implementation("com.chargemap.compose:numberpicker:1.0.3")
+    // androidx.*
     implementation("androidx.core:core-splashscreen:$splashScreenVersion")
-    testImplementation("junit:junit:4.13.2")
+    implementation("androidx.datastore:datastore-preferences:$datastoreVersion")
+    implementation("androidx.compose.material3:material3-window-size-class:$material3Version")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.hilt:hilt-navigation-compose:$hiltComposeVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
+    implementation("androidx.navigation:navigation-compose:$navVersion")
+    implementation("androidx.activity:activity-compose:$activityComposeVersion")
+
+    implementation(platform("androidx.compose:compose-bom:$composeBom"))
+    implementation("androidx.compose.material3:material3")
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
+    debugImplementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+
+    // com.google.*
+    implementation("com.google.dagger:hilt-android:$daggerVersion")
+    ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
+    implementation("com.google.code.gson:gson:$gsonVersion")
+    implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
+
+    implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+
+
+    // third parties
+    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+
+    implementation("io.coil-kt:coil-compose:$coilVersion")
+
+    testImplementation("junit:junit:4.13.2")
 }

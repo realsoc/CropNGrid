@@ -1,0 +1,37 @@
+<resources>
+    <string name="photo_picked">Foto selecionada</string>
+    <string name="saving_picture_parts">Salvar as partes da imagem</string>
+    <string name="action">Ação</string>
+    <string name="permission_needed">O aplicativo requer a permissão de armazenamento</string>
+    <string name="grant">Conceder</string>
+    <string name="app_description_home">Escolha uma foto da galeria e faça um recorte diretamente para o seu
+        feed do Instagram!</string>
+    <string name="start">Começar</string>
+    <string name="crop_history">Histórico</string>
+    <string name="cancel">Cancelar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="grid_parameters">Parâmetros do grid</string>
+    <string name="delete">Excluir</string>
+    <string name="delete_confirmation_question">Tem certeza de que deseja excluir este arquivo?</string>
+    <string name="download_grid_parts">Baixar partes da grade</string>
+    <string name="confirm_download_parts">Você está prestes a baixar as partes da imagem na memória do seu telefone</string>
+    <string name="go_to_grid">Quero ver</string>
+    <string name="success_cropping">Recorte bem-sucedido</string>
+    <string name="crop_the_image_question">Recortar a imagem?</string>
+    <string name="make_the_grid">Criar o Grid</string>
+    <string name="post_on_insta">Pronto! \nAgora basta selecionar a foto na ordem da postagem e compartilhar no seu
+        Instagram!</string>
+    <string name="grid_creator">Criador de Grid</string>
+    <string name="data_description">Ao aceitar, este aplicativo coletará dados analíticos, incluindo relatórios de bugs e o uso do aplicativo, todos anonimizados. Esses dados permitem ao desenvolvedor corrigir bugs e aprimorar o aplicativo.</string>
+    <string name="sending_data">Envio de dados:</string>
+    <string name="about_app">Sobre o app:</string>
+    <string name="app_description_first_part">Aplicativo desenvolvido e mantido por </string>
+    <string name="app_description_third_part">. Código-fonte disponível no Github. Não hesite em entrar em contato
+        caso encontre algum problema durante o uso do aplicativo ou para enviar suas sugestões de melhoria.</string>
+    <string name="grid">Grid</string>
+    <string name="please_accept_rationnaly">O App necessita da permissão ao armazento para funcionar na boa.</string>
+    <string name="accept">Aceitar</string>
+    <string name="have_you_think_about_cropping_an_image_yet">Já pensou em cortar uma imagem hoje?</string>
+    <string name="permission_recused">Sem essa permissão, o app não pode funcionar.</string>
+    <string name="fix">Permitir</string>
+</resources>

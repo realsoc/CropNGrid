@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="photo_picked">Photo sélectionnée</string>
+    <string name="saving_picture_parts">Enregistrer les morceaux de l\'image</string>
+    <string name="action">Action</string>
+    <string name="permission_needed">L\'application à besoin de la permission de stockage</string>
+    <string name="grant">Accorder</string>
+    <string name="app_description_home">Choisis une photo dans la galerie et découpe-la pour ton fil
+        Instagram !</string>
+    <string name="start">Démarrer</string>
+    <string name="crop_history">Historique</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="grid_parameters">Paramètres de la grille</string>
+    <string name="delete">Supprimer</string>
+    <string name="delete_confirmation_question">Es-tu sûr de vouloir supprimer la grille ?</string>
+    <string name="download_grid_parts">Télécharger la grille</string>
+    <string name="confirm_download_parts">Tu es sur le point de télécharger les morceaux de la grille dans la
+        mémoire de ton téléphone</string>
+    <string name="go_to_grid">C\'est parti !</string>
+    <string name="success_cropping">Découpe réussie</string>
+    <string name="crop_the_image_question">Découper l\'image ?</string>
+    <string name="make_the_grid">Créer la grille</string>
+    <string name="post_on_insta">C\'est fait !  \nMaintenant, il te suffit de cliquer sur les numéros dans l\'ordre pour publier les photos sur ton fil Insta !</string>
+    <string name="grid_creator">Créateur de grille</string>
+    <string name="data_description">En acceptant, cette application collectera des
+        rapports d\'erreurs et d\'utilisation de l\'application - anonymisés - qui permettront au
+        développeur de corriger les bugs et d\'améliorer l\'expérience utilisateur.</string>
+    <string name="sending_data">Collecte de données :</string>
+    <string name="about_app">A propos de l\'application :</string>
+    <string name="app_description_first_part">Application développée et maintenue par </string>
+    <string name="app_description_third_part">. Code source disponible sur Github. N\'hésite pas à me contacter si
+        tu rencontre un problème lors de l\'utilisation de l\'app ou pour tes idées d\'amélioration.</string>
+    <string name="grid">Grille</string>
+    <string name="please_accept_rationnaly">CropNGrid nécessite des permissions de storage pour fonctionner
+        correctement</string>
+    <string name="accept">Accepter</string>
+    <string name="have_you_think_about_cropping_an_image_yet">As-tu déjà découpé une image aujourd\'hui ?</string>
+
+    <string name="permission_recused">Sans cette permission, l\'app ne peut fonctionner.</string>
+    <string name="fix">Autoriser</string>
+</resources>
