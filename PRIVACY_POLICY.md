@@ -16,8 +16,7 @@ user) is stored on your device only, and can be simply erased by clearing the ap
 ### Explanation of permissions requested in the app
 
 The list of permissions required by the app can be found in the `AndroidManifest.xml` file:
-
-[Link to the file]
+https://github.com/realsoc/CropNGrid/blob/720fe1aaf892fe1e5ad4bc576bac151feee931d9/app/src/main/AndroidManifest.xml#L4-L8
 
 <br/>
 
