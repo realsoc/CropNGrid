@@ -2,21 +2,18 @@ package com.realsoc.cropngrid.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.realsoc.cropngrid.data.PreferencesRepository
 import com.realsoc.cropngrid.Result
 import com.realsoc.cropngrid.analytics.AnalyticsHelper
 import com.realsoc.cropngrid.analytics.logLogGranted
 import com.realsoc.cropngrid.asResult
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.realsoc.cropngrid.data.PreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class InfoViewModel @Inject constructor(
+class InfoViewModel (
     private val preferencesRepository: PreferencesRepository,
     private val analyticsHelper: AnalyticsHelper
 ): ViewModel() {

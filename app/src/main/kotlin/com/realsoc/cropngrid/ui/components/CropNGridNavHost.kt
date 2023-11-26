@@ -67,6 +67,7 @@ fun CropNGridNavHost(
         popExitTransition = transitions.popExitTransitionChain,
         modifier = modifier
     ) {
+
         homeScreen(
             onCropRequested = {
                 navController.navigateToCropper(it)

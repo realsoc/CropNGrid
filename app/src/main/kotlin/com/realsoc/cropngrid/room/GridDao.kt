@@ -5,10 +5,11 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.TypeConverter
-import com.google.gson.Gson
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.models.GridUris
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Dao
 interface GridDao {
@@ -32,11 +33,11 @@ interface GridDao {
 class Converters {
     @TypeConverter
     fun fromJson(parts: String): GridUris {
-        return Gson().fromJson(parts)
+        return Json.decodeFromString<GridUris>(parts)
     }
 
     @TypeConverter
     fun toJson(parts: GridUris): String {
-        return Gson().toJson(parts)
+        return Json.encodeToString(parts)
     }
 }

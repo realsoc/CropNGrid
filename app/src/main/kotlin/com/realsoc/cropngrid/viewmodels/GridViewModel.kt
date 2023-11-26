@@ -4,16 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.realsoc.cropngrid.data.GridRepository
-import com.realsoc.cropngrid.data.PictureRepository
 import com.realsoc.cropngrid.Result
 import com.realsoc.cropngrid.asResult
+import com.realsoc.cropngrid.data.GridRepository
+import com.realsoc.cropngrid.data.PictureRepository
 import com.realsoc.cropngrid.decode
 import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.navigation.GridArgs
 import com.realsoc.cropngrid.toUri
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,10 +20,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
-@HiltViewModel
-class GridViewModel @Inject constructor(
+class GridViewModel(
     application: Application,
     savedStateHandle: SavedStateHandle,
     private val gridRepository: GridRepository,
