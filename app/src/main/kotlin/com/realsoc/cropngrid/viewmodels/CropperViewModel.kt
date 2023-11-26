@@ -7,9 +7,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.realsoc.cropngrid.createBitmapOfArea
 import com.realsoc.cropngrid.data.GridRepository
 import com.realsoc.cropngrid.data.PictureRepository
-import com.realsoc.cropngrid.createBitmapOfArea
 import com.realsoc.cropngrid.encode
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.navigation.CropperArgs
@@ -17,7 +17,6 @@ import com.realsoc.cropngrid.safeRecycle
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
 import com.realsoc.cropngrid.ui.scale
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,10 +25,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
-import javax.inject.Inject
 
-@HiltViewModel
-class CropperViewModel @Inject constructor(
+class CropperViewModel(
     application: Application,
     savedStateHandle: SavedStateHandle,
     private val pictureRepository: PictureRepository,

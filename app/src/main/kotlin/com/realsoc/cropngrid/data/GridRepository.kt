@@ -4,7 +4,6 @@ import androidx.annotation.WorkerThread
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.room.GridDao
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
 interface GridRepository {
     fun getGrids(): Flow<List<Grid>>
@@ -15,7 +14,7 @@ interface GridRepository {
 
     suspend fun deleteGrid(grid: Grid)
 }
-class GridRepositoryImpl @Inject constructor(private val gridDao: GridDao): GridRepository {
+class GridRepositoryImpl(private val gridDao: GridDao): GridRepository {
     override fun getGrids(): Flow<List<Grid>> {
         return gridDao.loadGrids()
     }

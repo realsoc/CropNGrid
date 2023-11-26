@@ -46,7 +46,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.analytics.TrackScreenViewEvent
@@ -58,6 +57,7 @@ import com.realsoc.cropngrid.ui.theme.Blue
 import com.realsoc.cropngrid.ui.theme.Lemon
 import com.realsoc.cropngrid.viewmodels.InfoUiState
 import com.realsoc.cropngrid.viewmodels.InfoViewModel
+import org.koin.androidx.compose.koinViewModel
 
 const val GITHUB_ADDRESS = "https://github.com/realsoc/CropNGrid"
 const val MAIL_ADDRESS = "threelittledev@gmail.com"
@@ -66,7 +66,7 @@ private const val SCREEN_NAME = "info"
 @Composable
 fun InfoRoute(
     modifier: Modifier = Modifier,
-    viewModel: InfoViewModel = hiltViewModel()
+    viewModel: InfoViewModel = koinViewModel()
 ) {
 
     val context = LocalContext.current

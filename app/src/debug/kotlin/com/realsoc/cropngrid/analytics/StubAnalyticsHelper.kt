@@ -8,13 +8,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
 private const val TAG = "StubAnalyticsHelper"
 
-@Singleton
-class StubAnalyticsHelper @Inject constructor(
+class StubAnalyticsHelper (
     private val preferencesRepository: PreferencesRepository,
     private val coroutineScope: CoroutineScope
 ) :

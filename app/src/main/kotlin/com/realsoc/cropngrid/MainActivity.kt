@@ -21,15 +21,11 @@ import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.ui.CropNGridApp
 import com.realsoc.cropngrid.ui.components.Background
 import com.realsoc.cropngrid.ui.theme.CropNGridTheme
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.koin.android.ext.android.inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var analyticsHelper: AnalyticsHelper
-
+    private val analyticsHelper by inject<AnalyticsHelper>()
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -36,7 +36,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,12 +57,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.analytics.TrackScreenViewEvent
-import com.realsoc.cropngrid.analytics.buttonClick
 import com.realsoc.cropngrid.analytics.gridCropped
 import com.realsoc.cropngrid.frame
 import com.realsoc.cropngrid.getBitmap
@@ -91,6 +88,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import java.lang.Float.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -103,7 +101,7 @@ internal fun CropperRoute(
     onCropComplete: (String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CropperViewModel = hiltViewModel(),
+    viewModel: CropperViewModel = koinViewModel(),
 ) {
     val croppingUiState by viewModel.croppingUiState.collectAsStateWithLifecycle()
     val gridParameters by viewModel.gridParametersState.collectAsStateWithLifecycle()

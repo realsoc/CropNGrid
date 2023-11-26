@@ -16,14 +16,13 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.Objects
-import javax.inject.Inject
 
 
 interface PictureRepository {
     suspend fun saveImage(context: Application, bitmap: Bitmap, name: String, sharable: Boolean
     = false): Uri?
 }
-class PictureRepositoryImpl @Inject constructor(): PictureRepository {
+class PictureRepositoryImpl : PictureRepository {
 
     override suspend fun saveImage(context: Application, bitmap: Bitmap, name: String,
                                    sharable: Boolean):

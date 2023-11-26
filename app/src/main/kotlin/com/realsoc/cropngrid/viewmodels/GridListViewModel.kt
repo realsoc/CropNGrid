@@ -2,19 +2,16 @@ package com.realsoc.cropngrid.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.realsoc.cropngrid.data.GridRepository
 import com.realsoc.cropngrid.Result
 import com.realsoc.cropngrid.asResult
+import com.realsoc.cropngrid.data.GridRepository
 import com.realsoc.cropngrid.models.Grid
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
 
-@HiltViewModel
-class GridListViewModel @Inject constructor(
+class GridListViewModel (
     gridRepository: GridRepository
 ): ViewModel() {
 
