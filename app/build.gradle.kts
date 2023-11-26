@@ -1,8 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.firebase.crashlytics")
     id("com.google.devtools.ksp")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -60,13 +60,12 @@ dependencies {
     val splashScreenVersion = "1.0.1"
     val material3Version = "1.1.2"
     val datastoreVersion = "1.0.0"
-    val activityComposeVersion = "1.8.0"
+    val activityComposeVersion = "1.8.1"
     val lifecycleVersion = "2.6.2"
 
     val composeBom = "2023.10.01"
 
     // com.google.* version number
-    val gsonVersion = "2.10.1"
     val accompagnistVersion = "0.32.0"
 
     // third parties version number
@@ -102,7 +101,6 @@ dependencies {
 
 
     // com.google.*
-    implementation("com.google.code.gson:gson:$gsonVersion")
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
     //di
@@ -116,4 +114,6 @@ dependencies {
     implementation("io.coil-kt:coil-compose:$coilVersion")
 
     testImplementation("junit:junit:4.13.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
 }
