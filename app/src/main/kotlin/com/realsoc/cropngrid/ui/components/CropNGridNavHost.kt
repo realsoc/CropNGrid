@@ -96,6 +96,7 @@ fun CropNGridNavHost(
             }
         )
         infoScreen(
+            coroutineScope = appState.coroutineScope,
             onShowSnackbar = onShowSnackbar
         )
     }

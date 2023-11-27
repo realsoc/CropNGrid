@@ -19,7 +19,7 @@
     <string name="success_cropping">Success cropping</string>
     <string name="crop_the_image_question">Crop the image?</string>
     <string name="make_the_grid">Make the grid</string>
-    <string name="post_on_insta">Good ! \\nNow just click on the picture part in the order to upload the grid on your Instagram feed !</string>
+    <string name="post_on_insta">Good ! \nNow just click on the picture part in the order to upload the grid on your Instagram feed !</string>
     <string name="grid_creator">Grid creator</string>
     <string name="data_description">By accepting, this application will collect bug reports and analytics, all anonymized. This data allows the developer to fix bugs and improve the application.</string>
     <string name="sending_data">Sending data:</string>
@@ -33,4 +33,5 @@
     <string name="have_you_think_about_cropping_an_image_yet">Have you think about cropping an image yet?</string>
     <string name="permission_recused">You recused the storage permission, CropNGrid won\'t work</string>
     <string name="fix">Fix</string>
+    <string name="no_mail_app">No application found to send mail.</string>
 </resources>

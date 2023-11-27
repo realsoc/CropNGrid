@@ -19,13 +19,19 @@ import java.util.Objects
 
 
 interface PictureRepository {
-    suspend fun saveImage(context: Application, bitmap: Bitmap, name: String, sharable: Boolean
-    = false): Uri?
+    suspend fun saveImage(
+        context: Application,
+        bitmap: Bitmap,
+        name: String,
+        sharable: Boolean = false
+    ): Uri?
 }
 class PictureRepositoryImpl : PictureRepository {
 
-    override suspend fun saveImage(context: Application, bitmap: Bitmap, name: String,
-                                   sharable: Boolean):
+    override suspend fun saveImage(
+        context: Application, bitmap: Bitmap, name: String,
+        sharable: Boolean
+    ):
             Uri? {
         return if (SDK_INT >= Build.VERSION_CODES.Q) {
             try {
@@ -35,7 +41,7 @@ class PictureRepositoryImpl : PictureRepository {
                     savePrivateImage(context, bitmap, name)
                 }
             } catch (e: Exception) {
-                // Todo : what to do here
+
                 println(e)
                 null
             }

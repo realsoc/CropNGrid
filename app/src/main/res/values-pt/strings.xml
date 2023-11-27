@@ -34,4 +34,5 @@
     <string name="have_you_think_about_cropping_an_image_yet">Já pensou em cortar uma imagem hoje?</string>
     <string name="permission_recused">Sem essa permissão, o app não pode funcionar.</string>
     <string name="fix">Permitir</string>
+    <string name="no_mail_app">Não achamos aplicativo email no seu celular.</string>
 </resources>
