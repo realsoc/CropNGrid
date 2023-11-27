@@ -10,3 +10,4 @@ But after I watched a [conference on states in the UI Layer](https://www.youtube
 To let the ViewModel knows only what it should know in case of configuration change, and to keep the rest in the UI components, including the navigation.
 
 So the navigation controller stays in the NavHost component. 
+
