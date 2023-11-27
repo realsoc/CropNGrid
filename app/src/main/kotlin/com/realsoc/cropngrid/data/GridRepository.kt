@@ -4,6 +4,7 @@ import androidx.annotation.WorkerThread
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.room.GridDao
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import javax.inject.Inject
 
 interface GridRepository {

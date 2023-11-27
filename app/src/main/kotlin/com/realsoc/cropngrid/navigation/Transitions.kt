@@ -81,7 +81,7 @@ data class Transitions(
             }
         }
     }
-    companion object {
+    companion  object {
         private val NONE_ENTER: EnterTransitionLambda = {
             EnterTransition.None
         }

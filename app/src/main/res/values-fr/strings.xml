@@ -39,4 +39,5 @@
 
     <string name="permission_recused">Sans cette permission, l\'app ne peut fonctionner.</string>
     <string name="fix">Autoriser</string>
+    <string name="no_mail_app">Tu n\'as pas d\'application supportant l\'envoi de mails sur ton téléphone.</string>
 </resources>
