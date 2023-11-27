@@ -33,4 +33,5 @@
     <string name="have_you_think_about_cropping_an_image_yet">Have you think about cropping an image yet?</string>
     <string name="permission_recused">You recused the storage permission, CropNGrid won\'t work</string>
     <string name="fix">Fix</string>
+    <string name="no_mail_app">No application found to send mail.</string>
 </resources>

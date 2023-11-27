@@ -20,7 +20,7 @@ android {
         applicationId = "com.realsoc.cropngrid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -102,6 +102,7 @@ dependencies {
 
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
     debugImplementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
 

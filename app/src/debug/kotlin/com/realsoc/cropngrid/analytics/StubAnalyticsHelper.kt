@@ -21,9 +21,6 @@ class StubAnalyticsHelper @Inject constructor(
     AnalyticsHelper {
     override fun logEvent(event: AnalyticsEvent) {
         coroutineScope.launch {
-            withContext(Dispatchers.Main) {
-
-            }
             val logGranted = preferencesRepository.getLogGranted().first()
             if (logGranted || event.type == LOG_GRANTED) {
                 Log.d(TAG, "Received analytics event: $event")
