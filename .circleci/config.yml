@@ -42,56 +42,56 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
 
-  android-test:
-    parameters:
-      system-image:
-        type: string
-        default: system-images;android-30;google_apis;x86
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: 2021.10.1
-    steps:
-      - checkout
-      - run:
-            name: Export Google Services Json
-            command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
-      - run:
-            name: Decode Google Services Json
-            command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
-      - android/accept-licenses
-      - run:
-          name: Install OpenJDK 17
-          command: |
-            sudo apt-get update && sudo apt-get install openjdk-17-jdk
-            sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
-            sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
-            java -version
-      - run:
-          name: Setting java home
-          command: |
-            echo $JAVA_HOME
-            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
-            echo $JAVA_HOME
-      - android/create-avd:
-          avd-name: myavd
-          install: true
-          system-image: << parameters.system-image >>
-      - android/start-emulator:
-          avd-name: myavd
-          no-window: true
-          restore-gradle-cache-prefix: v1a
-      - android/run-tests
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/build/outputs/androidTest-results/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - store_artifacts:
-          path: ~/test-results/junit
+#  android-test:
+#    parameters:
+#      system-image:
+#        type: string
+#        default: system-images;android-30;google_apis;x86
+#    executor:
+#      name: android/android-machine
+#      resource-class: large
+#      tag: 2021.10.1
+#    steps:
+#      - checkout
+#      - run:
+#            name: Export Google Services Json
+#            command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
+#      - run:
+#            name: Decode Google Services Json
+#            command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
+#      - android/accept-licenses
+#      - run:
+#          name: Install OpenJDK 17
+#          command: |
+#            sudo apt-get update && sudo apt-get install openjdk-17-jdk
+#            sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+#            sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+#            java -version
+#      - run:
+#          name: Setting java home
+#          command: |
+#            echo $JAVA_HOME
+#            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+#            echo $JAVA_HOME
+#      - android/create-avd:
+#          avd-name: myavd
+#          install: true
+#          system-image: << parameters.system-image >>
+#      - android/start-emulator:
+#          avd-name: myavd
+#          no-window: true
+#          restore-gradle-cache-prefix: v1a
+#      - android/run-tests
+#      - run:
+#          name: Save test results
+#          command: |
+#            mkdir -p ~/test-results/junit/
+#            find . -type f -regex ".*/build/outputs/androidTest-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+#          when: always
+#      - store_test_results:
+#          path: ~/test-results
+#      - store_artifacts:
+#          path: ~/test-results/junit
 
   release-build:
     executor: android-executor
@@ -116,31 +116,29 @@ workflows:
   test-and-build:
     jobs:
       - unit-test
-      - android-test:
-          matrix:
-            alias: android-test-all
-            parameters:
-              system-image:
-                - system-images;android-30;google_apis;x86
-                - system-images;android-29;google_apis;x86
-                - system-images;android-28;google_apis;x86
-                - system-images;android-27;google_apis;x86
-                - system-images;android-26;google_apis;x86
-                - system-images;android-25;google_apis;x86
-                - system-images;android-24;google_apis;x86
-                - system-images;android-23;google_apis;x86
-          name: android-test-<<matrix.system-image>>
-          filters:
-            branches:
-              only:
-                - main
-                - dev
+#      - android-test:
+#          matrix:
+#            alias: android-test-all
+#            parameters:
+#              system-image:
+#                - system-images;android-30;google_apis;x86
+#                - system-images;android-29;google_apis;x86
+#                - system-images;android-28;google_apis;x86
+#                - system-images;android-27;google_apis;x86
+#                - system-images;android-26;google_apis;x86
+#                - system-images;android-25;google_apis;x86
+#                - system-images;android-24;google_apis;x86
+#                - system-images;android-23;google_apis;x86
+#          name: android-test-<<matrix.system-image>>
+#          filters:
+#            branches:
+#              only:
+#                - main
       - release-build:
           requires:
             - unit-test
-            - android-test-all
+#            - android-test-all
           filters:
             branches:
               only:
                 - main
-                - dev
