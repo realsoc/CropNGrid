@@ -47,7 +47,10 @@ jobs:
       system-image:
         type: string
         default: system-images;android-30;google_apis;x86
-    executor: android-executor
+    executor:
+      name: android/android-machine
+      resource-class: large
+      tag: 2021.10.1
     steps:
       - checkout
       - run:
