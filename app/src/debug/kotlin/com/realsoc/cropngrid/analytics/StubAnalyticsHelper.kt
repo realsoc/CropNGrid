@@ -6,13 +6,11 @@ import com.realsoc.cropngrid.data.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.withContext
 
 private const val TAG = "StubAnalyticsHelper"
 
-@Singleton
-class StubAnalyticsHelper @Inject constructor(
+class StubAnalyticsHelper (
     private val preferencesRepository: PreferencesRepository,
     private val coroutineScope: CoroutineScope
 ) :

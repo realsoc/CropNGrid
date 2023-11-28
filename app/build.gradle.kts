@@ -1,11 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
     id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
-    id("dagger.hilt.android.plugin")
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -63,22 +60,21 @@ dependencies {
     val splashScreenVersion = "1.0.1"
     val material3Version = "1.1.2"
     val datastoreVersion = "1.0.0"
-    val activityComposeVersion = "1.8.0"
+    val activityComposeVersion = "1.8.1"
     val lifecycleVersion = "2.6.2"
 
     val composeBom = "2023.10.01"
 
     // com.google.* version number
-    val gsonVersion = "2.10.1"
-    val hiltComposeVersion = "1.1.0"
     val accompagnistVersion = "0.32.0"
-    val daggerVersion = "2.48.1"
-
-    val firebaseBom = "32.5.0"
 
     // third parties version number
     val coilVersion = "2.5.0"
     val lottieVersion = "6.1.0"
+
+    val koinVersion = "3.2.0"
+    val koinAndroidVersion = "3.5.0"
+
 
 
     // androidx.*
@@ -88,7 +84,6 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.hilt:hilt-navigation-compose:$hiltComposeVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation("androidx.navigation:navigation-compose:$navVersion")
     implementation("androidx.activity:activity-compose:$activityComposeVersion")
@@ -107,9 +102,6 @@ dependencies {
 
 
     // com.google.*
-    implementation("com.google.dagger:hilt-android:$daggerVersion")
-    ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
-    implementation("com.google.code.gson:gson:$gsonVersion")
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
     releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
@@ -123,4 +115,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:$coilVersion")
 
     testImplementation("junit:junit:4.13.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
+    
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-android:$koinAndroidVersion")
+    implementation("io.insert-koin:koin-androidx-compose:$koinAndroidVersion")
 }

@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Dialog
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
@@ -67,15 +66,16 @@ import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.models.GridUris
 import com.realsoc.cropngrid.toUri
-import com.realsoc.cropngrid.ui.icons.CropNGridIcons
 import com.realsoc.cropngrid.ui.components.DialogButtons
 import com.realsoc.cropngrid.ui.components.LoadingView
 import com.realsoc.cropngrid.ui.drawTextOverlay
+import com.realsoc.cropngrid.ui.icons.CropNGridIcons
 import com.realsoc.cropngrid.ui.icons.FilledDownload
 import com.realsoc.cropngrid.viewmodels.GridUiState
 import com.realsoc.cropngrid.viewmodels.GridViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 private const val SCREEN_NAME = "grid"
 
@@ -93,7 +93,7 @@ fun GridRoute(
     coroutineScope: CoroutineScope,
     onGridDeleted: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: GridViewModel = hiltViewModel(),
+    viewModel: GridViewModel = koinViewModel(),
 ) {
     val gridUiState: GridUiState by viewModel.gridUiState.collectAsStateWithLifecycle()
     val context = LocalContext.current

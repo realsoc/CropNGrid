@@ -24,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -39,6 +38,7 @@ import com.realsoc.cropngrid.analytics.buttonClick
 import com.realsoc.cropngrid.decode
 import com.realsoc.cropngrid.viewmodels.GridListUiState
 import com.realsoc.cropngrid.viewmodels.GridListViewModel
+import org.koin.androidx.compose.koinViewModel
 
 private const val SCREEN_NAME = "grid_list"
 
@@ -46,7 +46,7 @@ private const val SCREEN_NAME = "grid_list"
 fun GridListRoute(
     onGridClicked: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: GridListViewModel = hiltViewModel()
+    viewModel: GridListViewModel = koinViewModel()
 ) {
     val gridListUiState: GridListUiState by viewModel.gridListUiState.collectAsStateWithLifecycle()
 
