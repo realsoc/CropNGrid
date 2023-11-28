@@ -17,7 +17,7 @@ android {
         applicationId = "com.realsoc.cropngrid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -97,16 +97,17 @@ dependencies {
 
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
     debugImplementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
 
     // com.google.*
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
-    //di
-    implementation("io.insert-koin:koin-core:$koinVersion")
-    implementation("io.insert-koin:koin-android:$koinAndroidVersion")
-    implementation("io.insert-koin:koin-androidx-compose:$koinAndroidVersion")
+    releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
+    releaseImplementation("com.google.firebase:firebase-analytics-ktx")
+    releaseImplementation("com.google.firebase:firebase-crashlytics-ktx")
+
 
     // third parties
     implementation("com.airbnb.android:lottie-compose:$lottieVersion")
@@ -116,4 +117,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.1")
+    
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("io.insert-koin:koin-android:$koinAndroidVersion")
+    implementation("io.insert-koin:koin-androidx-compose:$koinAndroidVersion")
 }

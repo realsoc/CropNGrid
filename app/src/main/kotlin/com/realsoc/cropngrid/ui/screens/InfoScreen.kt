@@ -1,5 +1,6 @@
 package com.realsoc.cropngrid.ui.screens
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.Intent.ACTION_SENDTO
 import android.net.Uri
@@ -33,12 +34,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
@@ -48,6 +46,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
+import com.realsoc.cropngrid.ui.components.TheZebraSpacer
 import com.realsoc.cropngrid.analytics.TrackScreenViewEvent
 import com.realsoc.cropngrid.analytics.buttonClick
 import com.realsoc.cropngrid.ui.icons.CropNGridIcons
@@ -65,6 +64,8 @@ private const val SCREEN_NAME = "info"
 
 @Composable
 fun InfoRoute(
+    coroutineScope: CoroutineScope,
+    onShowSnackbar: suspend (String, String?) -> Boolean,
     modifier: Modifier = Modifier,
     viewModel: InfoViewModel = koinViewModel()
 ) {
@@ -83,14 +84,22 @@ fun InfoRoute(
         putExtra(Intent.EXTRA_EMAIL, arrayOf(MAIL_ADDRESS))
     }
 
+    val noMailAppString = stringResource(id = R.string.no_mail_app)
+
     val onSourceCodeClick = {
         analyticsHelper.buttonClick(SCREEN_NAME, "github")
         context.startActivity(githubIntent)
     }
 
-    val onMailClick = {
+    val onMailClick: () -> Unit = {
         analyticsHelper.buttonClick(SCREEN_NAME, "mail")
-        context.startActivity(mailIntent)
+        try {
+            context.startActivity(mailIntent)
+        } catch (e: ActivityNotFoundException) {
+            coroutineScope.launch {
+                onShowSnackbar(noMailAppString, null)
+            }
+        }
     }
 
     val primaryColor = if (!isSystemInDarkTheme()) Lemon else MaterialTheme.colorScheme.primary
@@ -186,34 +195,10 @@ fun InfoScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    with(LocalDensity.current) {
-                        Spacer(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(16.dp)
-                                .drawWithContent {
-                                    val height = size.height.toDp()
-                                    val width = size.width.toDp()
-
-                                    val elementWidth = 8.dp
-
-                                    val elementNumber = (width / elementWidth).toInt()
-
-                                    val elements = (0..<elementNumber).map {
-                                        val left = it * elementWidth.toPx()
-                                        Offset(left, height.toPx()) to Offset(left + elementWidth.toPx(), 0f)
-                                    }
-
-                                    elements.forEach {
-                                        drawLine(
-                                            color = primaryColor,
-                                            start = it.first,
-                                            end = it.second,
-                                            strokeWidth = 1.dp.toPx()
-                                        )
-                                    }
-                                })
-                    }
+                    TheZebraSpacer(
+                        color = primaryColor,
+                        modifier = Modifier.fillMaxWidth().height(20.dp)
+                    )
 
                     Spacer(Modifier.height(16.dp))
                     Column {
