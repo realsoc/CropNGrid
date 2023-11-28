@@ -2,13 +2,6 @@ package com.realsoc.cropngrid.ui.components
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.List
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -16,14 +9,11 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.realsoc.cropngrid.ui.theme.CropNGridTheme
-import com.realsoc.cropngrid.ui.theme.ThemePreviews
 
 @Composable
 fun RowScope.CropNGridNavigationBarItem(
@@ -110,8 +100,7 @@ fun CropNGridNavigationRail(
         content = content,
     )
 }
-
-@ThemePreviews
+/*
 @Composable
 fun CropNGridNavigationPreview() {
     val items = listOf("Home", "Grid List")
@@ -147,7 +136,7 @@ fun CropNGridNavigationPreview() {
             }
         }
     }
-}
+}*/
 
 object CropNGridNavigationDefaults {
     @Composable

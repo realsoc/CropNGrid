@@ -20,7 +20,7 @@ android {
         applicationId = "com.realsoc.cropngrid"
         minSdk = 21
         targetSdk = 34
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -102,6 +102,7 @@ dependencies {
 
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
     debugImplementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
 
@@ -111,9 +112,9 @@ dependencies {
     implementation("com.google.code.gson:gson:$gsonVersion")
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
-    implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
+    releaseImplementation("com.google.firebase:firebase-analytics-ktx")
+    releaseImplementation("com.google.firebase:firebase-crashlytics-ktx")
 
 
     // third parties
