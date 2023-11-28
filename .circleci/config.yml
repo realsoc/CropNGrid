@@ -3,16 +3,30 @@ version: 2.1
 orbs:
   android: circleci/android@2.3.0
 
+executors:
+  android-executor:
+    parameters:
+      resource_class:
+        type: string
+        default: large
+    docker:
+      - image: cimg/android:2023.11
+    resource_class: << parameters.resource_class >>
+  working_directory: /tmp
+
 jobs:
   unit-test:
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: 2023.11.1
+    executor: android-executor
     steps:
       - checkout
       - android/restore-gradle-cache
       - android/restore-build-cache
+      - run:
+          name: Export Google Services Json
+          command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
+      - run:
+          name: Decode Google Services Json
+          command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
       - android/run-tests:
           test-command: ./gradlew testDebug
       - android/save-gradle-cache
@@ -33,15 +47,40 @@ jobs:
       system-image:
         type: string
         default: system-images;android-30;google_apis;x86
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: 2023.11.1
+    executor: android-executor
     steps:
       - checkout
-      - android/start-emulator-and-run-tests:
-          test-command: ./gradlew connectedDebugAndroidTest
+      - run:
+            name: Export Google Services Json
+            command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
+      - run:
+            name: Decode Google Services Json
+            command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
+      - run:
+          name: Debug licenses
+          command: |
+            echo $ANDROID_HOME
+            ls $ANDROID_HOME
+            ls $ANDROID_HOME/cmdline-tools
+            ls $ANDROID_HOME/cmdline-tools/latest/
+            ls $ANDROID_HOME/cmdline-tools/latest/bin
+            echo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+      - run:
+            name: Accepting licenses
+            command: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || if [ $? -ne '141' ]; then exit $?;
+              fi;
+          #Captures SIGPIPE 141 error but still allow repeating "y" to accept all licenses
+      - android/create-avd:
+          avd-name: myavd
+          install: true
           system-image: << parameters.system-image >>
+      - android/start-emulator:
+          avd-name: myavd
+          no-window: true
+          restore-gradle-cache-prefix: v1a
+            # Runs "./gradlew connectedDebugAndroidTest" by default.
+            # Specify the "test-command" parameter to customize the command run.
+      - android/run-tests
       - run:
           name: Save test results
           command: |
@@ -53,38 +92,18 @@ jobs:
       - store_artifacts:
           path: ~/test-results/junit
 
-  benchmarks-emulator:
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: 2023.11.1
-
-    steps:
-      - checkout
-      - android/start-emulator-and-run-tests:
-          test-command: adb shell am instrument -w -m -e androidx.benchmark.suppressErrors EMULATOR -e debug false -e androidx.benchmark.output.enable true com.circleci.samples.todoapp.macrobenchmark/androidx.test.runner.AndroidJUnitRunner
-          system-image: system-images;android-30;google_apis;x86
-          post-emulator-launch-assemble-command: ./gradlew app:assembleRelease macrobenchmark:assemble
-          post-emulator-wait-steps:
-            - run: ./gradlew app:installRelease macrobenchmark:installRelease
-          kill-emulators: false
-      - run:
-          name: Pull benchmark data from emulator
-          command: |
-            mkdir ~/benchmarks
-            adb pull /storage/emulated/0/Android/media/com.circleci.samples.todoapp.macrobenchmark ~/benchmarks
-      - store_artifacts:
-          path: ~/benchmarks
-
   release-build:
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: 2023.11.1
+    executor: android-executor
     steps:
       - checkout
       - android/restore-gradle-cache
       - android/restore-build-cache
+      - run:
+          name: Export Google Services Json
+          command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
+      - run:
+          name: Decode Google Services Json
+          command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
       - run:
           name: Assemble release build
           command: |
@@ -112,13 +131,15 @@ workflows:
           name: android-test-<<matrix.system-image>>
           filters:
             branches:
-              only: main # Commits to main branch
-      - benchmarks-emulator
+              only:
+                - main # Commits to main branch
+                - dev
       - release-build:
           requires:
             - unit-test
             - android-test-all
-            - benchmarks-emulator
           filters:
             branches:
-              only: main # Commits to main branch
+              only:
+                - main
+                - dev # Commits to main branch
