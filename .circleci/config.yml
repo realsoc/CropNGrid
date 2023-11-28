@@ -59,11 +59,20 @@ jobs:
       - run:
             name: Decode Google Services Json
             command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
+      - android/accept-licenses
       - run:
-            name: Accepting licenses
-            command: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || if [ $? -ne '141' ]; then exit $?;
-              fi;
-          #Captures SIGPIPE 141 error but still allow repeating "y" to accept all licenses
+          name: Install OpenJDK 17
+          command: |
+            sudo apt-get update && sudo apt-get install openjdk-17-jdk
+            sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+            sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+            java -version
+      - run:
+          name: Setting java home
+          command: |
+            echo $JAVA_HOME
+            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64/
+            echo $JAVA_HOME
       - android/create-avd:
           avd-name: myavd
           install: true
@@ -72,8 +81,6 @@ jobs:
           avd-name: myavd
           no-window: true
           restore-gradle-cache-prefix: v1a
-            # Runs "./gradlew connectedDebugAndroidTest" by default.
-            # Specify the "test-command" parameter to customize the command run.
       - android/run-tests
       - run:
           name: Save test results
