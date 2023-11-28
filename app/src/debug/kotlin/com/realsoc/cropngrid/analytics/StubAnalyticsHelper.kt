@@ -4,10 +4,8 @@ import android.util.Log
 import com.realsoc.cropngrid.analytics.AnalyticsEvent.Types.LOG_GRANTED
 import com.realsoc.cropngrid.data.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 

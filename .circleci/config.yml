@@ -57,15 +57,6 @@ jobs:
             name: Decode Google Services Json
             command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
       - run:
-          name: Debug licenses
-          command: |
-            echo $ANDROID_HOME
-            ls $ANDROID_HOME
-            ls $ANDROID_HOME/cmdline-tools
-            ls $ANDROID_HOME/cmdline-tools/latest/
-            ls $ANDROID_HOME/cmdline-tools/latest/bin
-            echo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-      - run:
             name: Accepting licenses
             command: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || if [ $? -ne '141' ]; then exit $?;
               fi;
@@ -132,7 +123,7 @@ workflows:
           filters:
             branches:
               only:
-                - main # Commits to main branch
+                - main
                 - dev
       - release-build:
           requires:
@@ -142,4 +133,4 @@ workflows:
             branches:
               only:
                 - main
-                - dev # Commits to main branch
+                - dev

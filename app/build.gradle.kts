@@ -112,9 +112,9 @@ dependencies {
     implementation("com.google.code.gson:gson:$gsonVersion")
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
-    implementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
+    releaseImplementation("com.google.firebase:firebase-analytics-ktx")
+    releaseImplementation("com.google.firebase:firebase-crashlytics-ktx")
 
 
     // third parties
