@@ -3,6 +3,7 @@ package com.realsoc.cropngrid.ui.screens
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -87,6 +88,7 @@ import com.realsoc.cropngrid.ui.toVector
 import com.realsoc.cropngrid.ui.vectorTo
 import com.realsoc.cropngrid.viewmodels.CropperViewModel
 import com.realsoc.cropngrid.viewmodels.CroppingUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -172,7 +174,7 @@ fun CropperScreen(
         }
     }
 
-    LoadBitmap(uri = uri) {
+    LoadBitmap(uri = uri, onError = onBackClick) {
         bitmap = it
         coordinateSystem = coordinateSystem.withPivot(it.frame.center.toPoint())
         restartHideControlsTimer()
@@ -268,14 +270,16 @@ fun CropperScreen(
                                     restartHideControlsTimer()
                                 },
                                 onDoubleTap = {
-                                    coroutineScope.launch {
-                                        animateToInitialState(
-                                            bitmap!!.frame,
-                                            gridArea,
-                                            coordinateSystem.pivot,
-                                            coordinateSystem.transformation
-                                        ) { state, _ ->
-                                            coordinateSystem = coordinateSystem.withTransformation(state)
+                                    bitmap?.let { loadedBitmap ->
+                                        coroutineScope.launch {
+                                            animateToInitialState(
+                                                loadedBitmap.frame,
+                                                gridArea,
+                                                coordinateSystem.pivot,
+                                                coordinateSystem.transformation
+                                            ) { state, _ ->
+                                                coordinateSystem = coordinateSystem.withTransformation(state)
+                                            }
                                         }
                                     }
                                 }
@@ -394,14 +398,17 @@ fun CropperScreen(
 
 
 @Composable
-fun LoadBitmap(uri: Uri, onLoaded: (Bitmap) -> Unit) {
+fun LoadBitmap(uri: Uri, onError: () -> Unit = {}, onLoaded: (Bitmap) -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.getBitmap(uri)
-        }.let {
-            onLoaded(it)
+        try {
+            onLoaded(context.contentResolver.getBitmap(uri))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to load image $uri", e)
+            onError()
         }
     }
 }

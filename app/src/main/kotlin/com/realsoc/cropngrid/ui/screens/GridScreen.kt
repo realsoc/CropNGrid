@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -74,6 +75,7 @@ import com.realsoc.cropngrid.ui.drawTextOverlay
 import com.realsoc.cropngrid.ui.icons.FilledDownload
 import com.realsoc.cropngrid.viewmodels.GridUiState
 import com.realsoc.cropngrid.viewmodels.GridViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -254,10 +256,16 @@ fun LoadGridBitmap(uris: GridUris, onLoaded: (List<List<Pair<Uri, Bitmap>>>) -> 
     val context = LocalContext.current
 
     LaunchedEffect(uris) {
-        with(context) {
-            uris.map { row -> row.map { uri -> decode(uri).toUri().let { it to contentResolver.getBitmap(it) } } }
-        }.let {
-            onLoaded(it)
+        try {
+            uris.map { row ->
+                row.map { uri ->
+                    decode(uri).toUri().let { it to context.contentResolver.getBitmap(it) }
+                }
+            }.let { onLoaded(it) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to load grid images", e)
         }
     }
 }

@@ -80,6 +80,7 @@ dependencies {
 
     // androidx.*
     implementation("androidx.core:core-splashscreen:$splashScreenVersion")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("androidx.datastore:datastore-preferences:$datastoreVersion")
     implementation("androidx.compose.material3:material3-window-size-class:$material3Version")
     implementation("androidx.room:room-runtime:$roomVersion")
