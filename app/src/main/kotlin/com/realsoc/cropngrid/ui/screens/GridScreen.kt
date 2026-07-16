@@ -113,10 +113,13 @@ fun GridRoute(
             analyticsHelper.buttonClick(SCREEN_NAME, "share")
             context.shareUri(it) },
         onBackClick = onBackClick,
-        onDeleteGrid = {
+        onDeleteGrid = { grid ->
             analyticsHelper.buttonClick(SCREEN_NAME, "delete_confirmed")
-            onGridDeleted()
-            viewModel.deleteGrid(it)
+            if (viewModel.deleteGrid(grid)) {
+                onGridDeleted()
+            } else {
+                Toast.makeText(context, context.getString(R.string.delete_failure), Toast.LENGTH_SHORT).show()
+            }
         },
         onSaveGrid = { grid ->
             analyticsHelper.buttonClick(SCREEN_NAME, "download_confirmed")

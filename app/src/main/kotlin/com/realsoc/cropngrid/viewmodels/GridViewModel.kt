@@ -62,9 +62,29 @@ class GridViewModel @Inject constructor(
         }
     }
 
-    suspend fun deleteGrid(grid: Grid) {
-        withContext(Dispatchers.IO) {
+    /**
+     * Deletes the grid and its underlying image files. Returns true on success.
+     */
+    suspend fun deleteGrid(grid: Grid): Boolean = withContext(Dispatchers.IO) {
+        try {
             gridRepository.deleteGrid(grid)
+            // Best-effort cleanup: the images are useless without the grid row
+            val resolver = getApplication<Application>().contentResolver
+            (grid.parts.flatten() + grid.miniatureUriEncoded).forEach { encodedUri ->
+                try {
+                    resolver.delete(decode(encodedUri).toUri(), null, null)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("CropNGrid", "Failed to delete grid image $encodedUri", e)
+                }
+            }
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to delete grid ${grid.id}", e)
+            false
         }
     }
 

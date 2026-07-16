@@ -17,6 +17,7 @@
     <string name="download_grid_parts">Télécharger la grille</string>
     <string name="download_success">Grille enregistrée</string>
     <string name="download_failure">Impossible d\'enregistrer la grille</string>
+    <string name="delete_failure">Impossible de supprimer la grille</string>
     <string name="confirm_download_parts">Tu es sur le point de télécharger les morceaux de la grille dans la
         mémoire de ton téléphone</string>
     <string name="go_to_grid">C\'est parti !</string>
