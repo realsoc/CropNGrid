@@ -10,9 +10,9 @@ executors:
         type: string
         default: large
     docker:
-      - image: cimg/android:2023.11
+      - image: cimg/android:2025.04
     resource_class: << parameters.resource_class >>
-  working_directory: /tmp
+    working_directory: /tmp/cropngrid
 
 jobs:
   unit-test:
@@ -21,9 +21,6 @@ jobs:
       - checkout
       - android/restore-gradle-cache
       - android/restore-build-cache
-      - run:
-          name: Export Google Services Json
-          command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
       - run:
           name: Decode Google Services Json
           command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
@@ -99,9 +96,6 @@ jobs:
       - checkout
       - android/restore-gradle-cache
       - android/restore-build-cache
-      - run:
-          name: Export Google Services Json
-          command: echo 'export GOOGLE_SERVICES_JSON="$GOOGLE_SERVICES_JSON"' >> $BASH_ENV
       - run:
           name: Decode Google Services Json
           command: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json

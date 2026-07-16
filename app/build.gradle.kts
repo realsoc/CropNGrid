@@ -9,10 +9,6 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        create("release") {
-        }
-    }
     namespace = "com.realsoc.cropngrid"
     compileSdk = 36
 
