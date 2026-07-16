@@ -43,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,7 +82,6 @@ import com.realsoc.cropngrid.ui.icons.FilledDownload
 import com.realsoc.cropngrid.viewmodels.GridUiState
 import com.realsoc.cropngrid.viewmodels.GridViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 private const val SCREEN_NAME = "grid"
@@ -97,7 +97,6 @@ fun Context.shareUri(uri: Uri) {
 
 @Composable
 fun GridRoute(
-    coroutineScope: CoroutineScope,
     onGridDeleted: () -> Unit,
     onBackClick: () -> Unit,
     viewModel: GridViewModel = hiltViewModel(),
@@ -107,7 +106,6 @@ fun GridRoute(
     val analyticsHelper = LocalAnalyticsHelper.current
 
     GridScreen(
-        coroutineScope,
         gridUiState = gridUiState,
         onPartClick = {
             analyticsHelper.buttonClick(SCREEN_NAME, "share")
@@ -137,7 +135,6 @@ fun GridRoute(
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun GridScreen(
-    coroutineScope: CoroutineScope,
     gridUiState: GridUiState,
     onPartClick: (Uri) -> Unit,
     onBackClick: () -> Unit,
@@ -147,6 +144,8 @@ fun GridScreen(
 ) {
 
     TrackScreenViewEvent(screenName = SCREEN_NAME)
+
+    val coroutineScope = rememberCoroutineScope()
 
     Surface(modifier) {
         var requiredAction by remember { mutableStateOf<GridScreenActions?>(null) }

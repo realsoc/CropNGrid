@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,16 +50,19 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.realsoc.cropngrid.R
@@ -89,7 +93,6 @@ import com.realsoc.cropngrid.ui.vectorTo
 import com.realsoc.cropngrid.viewmodels.CropperViewModel
 import com.realsoc.cropngrid.viewmodels.CroppingUiState
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,7 +104,6 @@ private const val SCREEN_NAME = "cropper"
 
 @Composable
 internal fun CropperRoute(
-    coroutineScope: CoroutineScope,
     onCropComplete: (String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -112,7 +114,6 @@ internal fun CropperRoute(
 
     CropperScreen(
         uri = viewModel.pictureUri,
-        coroutineScope = coroutineScope,
         gridParameters = gridParameters,
         onGridParameters = { viewModel.updateGridParameters(it) },
         onBackClick = onBackClick,
@@ -128,7 +129,6 @@ internal fun CropperRoute(
 @Composable
 fun CropperScreen(
     uri: Uri,
-    coroutineScope: CoroutineScope,
     gridParameters: GridParameters,
     onGridParameters: (GridParameters) -> Unit,
     onBackClick: () -> Unit,
@@ -142,27 +142,32 @@ fun CropperScreen(
     TrackScreenViewEvent(screenName = SCREEN_NAME)
 
     val analyticsHelper = LocalAnalyticsHelper.current
+    val coroutineScope = rememberCoroutineScope()
 
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var name by remember { mutableStateOf<String?>(null) }
 
     var showControls by remember { mutableStateOf(false) }
-    var gridControlsVisibilityJob: Job = remember { Job() }
+    // Holder survives recompositions; a plain var would reset to the first remembered Job
+    val gridControlsVisibilityJob = remember { mutableStateOf<Job?>(null) }
 
     var showCropDialog by remember { mutableStateOf(false) }
 
     var coordinateSystem by remember { mutableStateOf(CoordinateSystem()) }
-    var gridArea by remember { mutableStateOf(Rect(0f, 0f, 100f, 100f)) }
 
-    var gridPartAreas: List<List<Rect>> by remember { mutableStateOf(listOf()) }
+    var canvasSize by remember { mutableStateOf(Size.Zero) }
+    val gridArea = remember(gridParameters, canvasSize) {
+        if (canvasSize == Size.Zero) Rect.Zero
+        else calculateGridArea(gridParameters, canvasSize.width, canvasSize.height)
+    }
 
-    LaunchedEffect(gridArea, gridParameters) {
-        gridPartAreas = getCropGrid(gridArea, gridParameters)
+    val gridPartAreas: List<List<Rect>> = remember(gridArea, gridParameters) {
+        getCropGrid(gridArea, gridParameters)
     }
 
     val restartHideControlsTimer = {
-        gridControlsVisibilityJob.cancel()
-        gridControlsVisibilityJob = coroutineScope.launch {
+        gridControlsVisibilityJob.value?.cancel()
+        gridControlsVisibilityJob.value = coroutineScope.launch {
             showControls = true
             delay(1500)
             showControls = false
@@ -170,10 +175,8 @@ fun CropperScreen(
     }
 
     val controlsInUse = {
-        gridControlsVisibilityJob.cancel()
-        gridControlsVisibilityJob = coroutineScope.launch {
-            showControls = true
-        }
+        gridControlsVisibilityJob.value?.cancel()
+        showControls = true
     }
 
     LoadBitmap(uri = uri, onError = onBackClick) {
@@ -186,14 +189,19 @@ fun CropperScreen(
         name = it
     }
 
-    // Setup initial state when bitmap and grid area are loaded
-    LaunchedEffect(bitmap) {
-        bitmap?.let { bitmap ->
-            // The last scale allowing the image to fit entirely in the grid
-            val minScale = min(gridArea.width / bitmap.width, gridArea.height / bitmap.height)
-            coordinateSystem = coordinateSystem.withMinScale(minScale)
+    // Fit the image into the grid once both the bitmap and the measured grid area are known,
+    // and keep the minimum zoom in sync when the grid area changes
+    var initialFitDone by remember(bitmap) { mutableStateOf(false) }
+    LaunchedEffect(bitmap, gridArea) {
+        val loadedBitmap = bitmap ?: return@LaunchedEffect
+        if (gridArea == Rect.Zero) return@LaunchedEffect
+        // The last scale allowing the image to fit entirely in the grid
+        val minScale = min(gridArea.width / loadedBitmap.width, gridArea.height / loadedBitmap.height)
+        coordinateSystem = coordinateSystem.withMinScale(minScale)
+        if (!initialFitDone) {
+            initialFitDone = true
             animateToInitialState(
-                bitmap.frame,
+                loadedBitmap.frame,
                 gridArea,
                 coordinateSystem.pivot,
                 coordinateSystem.transformation
@@ -256,6 +264,7 @@ fun CropperScreen(
             Box(
                 Modifier
                     .fillMaxSize()
+                    .onSizeChanged { canvasSize = it.toSize() }
                     .background(MaterialTheme.colorScheme.surface)
                     .drawWithContent {
                         drawContent()
@@ -303,14 +312,6 @@ fun CropperScreen(
                         }
                     }
                 }
-            }
-            // Calculate grid was isolated here to calculate only when it's required
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                gridArea = calculateGridArea(
-                    gridParameters,
-                    constraints.maxWidth.toFloat(),
-                    constraints.maxHeight.toFloat()
-                )
             }
             AnimatedVisibility(
                 visible = showControls,
