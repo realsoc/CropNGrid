@@ -93,9 +93,11 @@ import com.realsoc.cropngrid.ui.vectorTo
 import com.realsoc.cropngrid.viewmodels.CropperViewModel
 import com.realsoc.cropngrid.viewmodels.CroppingUiState
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Float.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -424,17 +426,21 @@ fun LoadName(uri: Uri, onLoaded: (String?) -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                cursor.moveToFirst()
-                cursor.getString(nameIndex).let {
-                    it.substring(0, it.lastIndexOf("."));
+        val displayName = withContext(Dispatchers.IO) {
+            try {
+                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0 && cursor.moveToFirst()) cursor.getString(nameIndex) else null
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("CropNGrid", "Failed to read display name of $uri", e)
+                null
             }
-        }.let {
-            onLoaded(it)
         }
+        // Some providers return names without an extension: keep the full name then
+        onLoaded(displayName?.substringBeforeLast('.'))
     }
 }
 

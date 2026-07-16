@@ -53,6 +53,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     // androidx.* version number
     val navVersion = "2.9.2"

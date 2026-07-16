@@ -10,7 +10,7 @@ import javax.inject.Inject
 interface GridRepository {
     fun getGrids(): Flow<List<Grid>>
 
-    fun getGrid(id: String): Flow<Grid>
+    fun getGrid(id: String): Flow<Grid?>
 
     suspend fun addGrid(grid: Grid)
 
@@ -21,7 +21,7 @@ class GridRepositoryImpl @Inject constructor(private val gridDao: GridDao): Grid
         return gridDao.loadGrids()
     }
 
-    override fun getGrid(id: String): Flow<Grid> {
+    override fun getGrid(id: String): Flow<Grid?> {
         return gridDao.loadGridById(id)
     }
 

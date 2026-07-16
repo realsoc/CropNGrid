@@ -21,8 +21,9 @@ interface GridDao {
     @Query("SELECT * FROM grids")
     suspend fun getAll(): List<Grid>
 
+    // Nullable: Room emits null when no row matches (e.g. right after deletion)
     @Query("SELECT * FROM grids WHERE id = :id")
-    fun loadGridById(id: String): Flow<Grid>
+    fun loadGridById(id: String): Flow<Grid?>
 
     @Query("SELECT * from grids")
     fun loadGrids(): Flow<List<Grid>>
@@ -30,13 +31,15 @@ interface GridDao {
 
 
 class Converters {
+    private val gson = Gson()
+
     @TypeConverter
     fun fromJson(parts: String): GridUris {
-        return Gson().fromJson(parts)
+        return gson.fromJson(parts)
     }
 
     @TypeConverter
     fun toJson(parts: GridUris): String {
-        return Gson().toJson(parts)
+        return gson.toJson(parts)
     }
 }
