@@ -13,6 +13,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.TrackDialogDisplayed
 import com.realsoc.cropngrid.analytics.TrackScreenViewEvent
 import com.realsoc.cropngrid.createBitmapList
+import com.realsoc.cropngrid.safeRecycle
 import com.realsoc.cropngrid.ui.getCropGrid
 import com.realsoc.cropngrid.ui.models.CoordinateSystem
 import com.realsoc.cropngrid.ui.models.GridParameters
@@ -47,8 +49,6 @@ fun ConfirmCropDialog(
     onConfirmCrop: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var currentDismissRequest by remember { mutableStateOf(onDismissRequest) }
-
     if (croppingUiState is CroppingUiState.Loading) {
         LoadingView()
     }
@@ -56,13 +56,25 @@ fun ConfirmCropDialog(
     TrackDialogDisplayed(dialogName = "confirm_crop")
 
     Dialog(
-        onDismissRequest = currentDismissRequest
+        onDismissRequest = {
+            if (croppingUiState is CroppingUiState.Success) {
+                onCropComplete(croppingUiState.gridId)
+            } else {
+                onDismissRequest()
+            }
+        }
     ) {
         var imagePartList by remember { mutableStateOf<List<List<Bitmap>>>(listOf()) }
 
         LaunchedEffect(source, gridArea, gridParameters, coordinateSystem) {
             val areas = getCropGrid(gridArea, gridParameters)
             imagePartList = createBitmapList(source, areas, coordinateSystem)
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                imagePartList.forEach { row -> row.forEach { it.safeRecycle() } }
+            }
         }
         val maxHeight = LocalConfiguration.current.screenHeightDp.dp - 100.dp
         Card(modifier.heightIn(max = maxHeight)) {
@@ -91,7 +103,6 @@ fun ConfirmCropDialog(
                     DialogButtons(onDismissRequest, onConfirmCrop)
                 } else {
                     if (croppingUiState is CroppingUiState.Success) {
-                        currentDismissRequest = { onCropComplete(croppingUiState.gridId) }
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(32.dp)
