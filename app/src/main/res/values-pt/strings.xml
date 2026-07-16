@@ -17,6 +17,7 @@
     <string name="download_success">Partes da grade salvas</string>
     <string name="download_failure">Não foi possível salvar as partes da grade</string>
     <string name="delete_failure">Não foi possível excluir a grade</string>
+    <string name="crop_failure">Ocorreu um erro ao recortar a imagem</string>
     <string name="confirm_download_parts">Você está prestes a baixar as partes da imagem na memória do seu telefone</string>
     <string name="go_to_grid">Quero ver</string>
     <string name="success_cropping">Recorte bem-sucedido</string>

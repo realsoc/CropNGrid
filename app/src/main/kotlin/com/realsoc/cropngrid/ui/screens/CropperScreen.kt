@@ -118,6 +118,7 @@ internal fun CropperRoute(
         onBackClick = onBackClick,
         croppingUiState = croppingUiState,
         onCrop = viewModel::makeGrid,
+        onCropDialogDismissed = viewModel::resetCroppingState,
         onCropComplete = onCropComplete,
         modifier = modifier
     )
@@ -132,7 +133,8 @@ fun CropperScreen(
     onGridParameters: (GridParameters) -> Unit,
     onBackClick: () -> Unit,
     croppingUiState: CroppingUiState?,
-    onCrop: suspend (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
+    onCrop: (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
+    onCropDialogDismissed: () -> Unit,
     onCropComplete: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -210,10 +212,13 @@ fun CropperScreen(
                 gridParameters = gridParameters,
                 onCropComplete,
                 croppingUiState,
-                onDismissRequest = { showCropDialog = false },
+                onDismissRequest = {
+                    showCropDialog = false
+                    onCropDialogDismissed()
+                },
                 onConfirmCrop = {
                     analyticsHelper.gridCropped(gridParameters.columnNumber, gridParameters.rowNumber)
-                    coroutineScope.launch { onCrop(it, gridArea, gridPartAreas, coordinateSystem, name) }
+                    onCrop(it, gridArea, gridPartAreas, coordinateSystem, name)
                 }
             )
         }

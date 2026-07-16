@@ -17,6 +17,7 @@
     <string name="download_success">Grid parts saved</string>
     <string name="download_failure">Could not save the grid parts</string>
     <string name="delete_failure">Could not delete the grid</string>
+    <string name="crop_failure">Something went wrong while cropping the image</string>
     <string name="confirm_download_parts">You are about to download the picture parts in your phone memory</string>
     <string name="go_to_grid">Let\'s see</string>
     <string name="success_cropping">Success cropping</string>

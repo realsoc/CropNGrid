@@ -113,6 +113,17 @@ fun ConfirmCropDialog(
                                 Text(stringResource(R.string.go_to_grid))
                             }
                         }
+                    } else if (croppingUiState is CroppingUiState.Error) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(32.dp)
+                        ) {
+                            Text(stringResource(R.string.crop_failure))
+                            Spacer(Modifier.height(20.dp))
+                            Button(onDismissRequest) {
+                                Text(stringResource(R.string.cancel))
+                            }
+                        }
                     }
                 }
             }
