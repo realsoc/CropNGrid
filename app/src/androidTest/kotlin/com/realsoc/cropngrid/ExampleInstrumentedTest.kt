@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.realsoc.image_cropper", appContext.packageName)
+        assertEquals("com.realsoc.cropngrid", appContext.packageName)
     }
 }
