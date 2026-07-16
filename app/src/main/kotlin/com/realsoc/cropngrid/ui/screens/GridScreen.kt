@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -91,8 +91,8 @@ fun Context.shareUri(uri: Uri) {
     val share = Intent(Intent.ACTION_SEND)
     share.type = type
     share.putExtra(Intent.EXTRA_STREAM, uri)
-    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-    startActivity(Intent.createChooser(share, "Share to"));
+    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    startActivity(Intent.createChooser(share, getString(R.string.share_to)))
 }
 
 @Composable
@@ -234,7 +234,10 @@ fun GridScreen(
                     )
                         },
                 navigationIcon = { IconButton(onClick = onBackClick) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.a11y_back)
+                    )
                 }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme
@@ -245,14 +248,17 @@ fun GridScreen(
                             GridScreenActions.Delete(gridUiState.grid)
                         }
                     }, enabled = gridUiState is GridUiState.Success) {
-                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
                     }
                     IconButton(onClick = {
                         requiredAction = (gridUiState as? GridUiState.Success)?.let {
                             GridScreenActions.Download(gridUiState.grid)
                         }
                     }, enabled = gridUiState is GridUiState.Success) {
-                        Icon(imageVector = CropNGridIcons.FilledDownload, contentDescription = "Download")
+                        Icon(
+                            imageVector = CropNGridIcons.FilledDownload,
+                            contentDescription = stringResource(R.string.download_grid_parts)
+                        )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                 },
@@ -354,7 +360,7 @@ fun GridPicture(
                                 val currentItemCount = rowNumber * columnCount + columnNumber
                                 Image(
                                     pair.second.asImageBitmap(),
-                                    "",
+                                    stringResource(R.string.a11y_grid_part, itemCount - currentItemCount),
                                     modifier = Modifier
                                         .padding(offset)
                                         .widthIn(max = maxWidthForItem)

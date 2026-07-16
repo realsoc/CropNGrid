@@ -1,16 +1,10 @@
 <resources>
-    <string name="photo_picked">Foto selecionada</string>
-    <string name="saving_picture_parts">Salvar as partes da imagem</string>
-    <string name="action">Ação</string>
-    <string name="permission_needed">O aplicativo requer a permissão de armazenamento</string>
-    <string name="grant">Conceder</string>
     <string name="app_description_home">Escolha uma foto da galeria e faça um recorte diretamente para o seu
         feed do Instagram!</string>
     <string name="start">Começar</string>
     <string name="crop_history">Histórico</string>
     <string name="cancel">Cancelar</string>
     <string name="confirm">Confirmar</string>
-    <string name="grid_parameters">Parâmetros do grid</string>
     <string name="delete">Excluir</string>
     <string name="delete_confirmation_question">Tem certeza de que deseja excluir este arquivo?</string>
     <string name="download_grid_parts">Baixar partes da grade</string>
@@ -33,10 +27,14 @@
     <string name="app_description_third_part">. Código-fonte disponível no Github. Não hesite em entrar em contato
         caso encontre algum problema durante o uso do aplicativo ou para enviar suas sugestões de melhoria.</string>
     <string name="grid">Grid</string>
-    <string name="please_accept_rationnaly">O App necessita da permissão ao armazento para funcionar na boa.</string>
-    <string name="accept">Aceitar</string>
     <string name="have_you_think_about_cropping_an_image_yet">Já pensou em cortar uma imagem hoje?</string>
-    <string name="permission_recused">Sem essa permissão, o app não pode funcionar.</string>
-    <string name="fix">Permitir</string>
     <string name="no_mail_app">Não achamos aplicativo email no seu celular.</string>
+    <string name="share_to">Compartilhar com</string>
+    <string name="a11y_back">Voltar</string>
+    <string name="a11y_app_logo">Logotipo do aplicativo</string>
+    <string name="a11y_hand_camera">Mão tirando uma foto</string>
+    <string name="a11y_mail">Enviar um e-mail</string>
+    <string name="a11y_github">Abrir o código-fonte no GitHub</string>
+    <string name="a11y_grid_part">Compartilhar a parte %1$d da grade</string>
+    <string name="a11y_grid_miniature">Abrir a grade</string>
 </resources>

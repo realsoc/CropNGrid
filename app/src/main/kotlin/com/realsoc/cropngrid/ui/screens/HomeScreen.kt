@@ -70,7 +70,7 @@ fun HomeScreen(
         ) {
             Image(
                 imageVector = ImageVector.vectorResource(id = R.drawable.logo_crop),
-                contentDescription = "Application logo",
+                contentDescription = stringResource(R.string.a11y_app_logo),
                 modifier = Modifier
                     .width(100.dp)
                     .padding(top = 32.dp)
@@ -104,7 +104,7 @@ fun HomeScreen(
         }
         Image(
             imageVector = ImageVector.vectorResource(id = R.drawable.hand_with_camera),
-            contentDescription = "Hand taking a picture",
+            contentDescription = stringResource(R.string.a11y_hand_camera),
             modifier = Modifier
                 .align(BottomStart)
                 .padding(bottom = 24.dp)

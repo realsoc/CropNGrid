@@ -95,7 +95,8 @@ fun SplittingBoxAnimated(
                         ) {
                             Image(
                                 bitmap.asImageBitmap(),
-                                "image at position ($rowNumber,$columnNumber)",
+                                // Decorative preview animation, described by the dialog text
+                                contentDescription = null,
                                 modifier = Modifier.fillMaxSize()
                             )
                         }

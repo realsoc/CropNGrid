@@ -145,7 +145,7 @@ fun InfoScreen(
         ) {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.logo_crop),
-                contentDescription = "Application logo",
+                contentDescription = stringResource(R.string.a11y_app_logo),
                 tint = primaryColor,
                 modifier = Modifier
                     .width(100.dp)
@@ -235,7 +235,7 @@ fun InfoScreen(
                             ) {
                                 Icon(
                                     imageVector = CropNGridIcons.FilledMail,
-                                    contentDescription = "Mail icon button",
+                                    contentDescription = stringResource(R.string.a11y_mail),
                                     modifier = Modifier
                                         .padding(10.dp),
                                     tint = primaryColor
@@ -248,7 +248,7 @@ fun InfoScreen(
                             ) {
                                 Icon(
                                     imageVector = CropNGridIcons.FilledGithub,
-                                    contentDescription = "Github icon button",
+                                    contentDescription = stringResource(R.string.a11y_github),
                                     modifier = Modifier
                                         .padding(10.dp),
                                     tint = primaryColor

@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="photo_picked">Photo sélectionnée</string>
-    <string name="saving_picture_parts">Enregistrer les morceaux de l\'image</string>
-    <string name="action">Action</string>
-    <string name="permission_needed">L\'application à besoin de la permission de stockage</string>
-    <string name="grant">Accorder</string>
     <string name="app_description_home">Choisis une photo dans la galerie et découpe-la pour ton fil
         Instagram !</string>
     <string name="start">Démarrer</string>
     <string name="crop_history">Historique</string>
     <string name="cancel">Annuler</string>
     <string name="confirm">Confirmer</string>
-    <string name="grid_parameters">Paramètres de la grille</string>
     <string name="delete">Supprimer</string>
     <string name="delete_confirmation_question">Es-tu sûr de vouloir supprimer la grille ?</string>
     <string name="download_grid_parts">Télécharger la grille</string>
@@ -36,12 +30,15 @@
     <string name="app_description_third_part">. Code source disponible sur Github. N\'hésite pas à me contacter si
         tu rencontre un problème lors de l\'utilisation de l\'app ou pour tes idées d\'amélioration.</string>
     <string name="grid">Grille</string>
-    <string name="please_accept_rationnaly">CropNGrid nécessite des permissions de storage pour fonctionner
-        correctement</string>
-    <string name="accept">Accepter</string>
     <string name="have_you_think_about_cropping_an_image_yet">As-tu déjà découpé une image aujourd\'hui ?</string>
 
-    <string name="permission_recused">Sans cette permission, l\'app ne peut fonctionner.</string>
-    <string name="fix">Autoriser</string>
     <string name="no_mail_app">Tu n\'as pas d\'application supportant l\'envoi de mails sur ton téléphone.</string>
+    <string name="share_to">Partager avec</string>
+    <string name="a11y_back">Retour</string>
+    <string name="a11y_app_logo">Logo de l\'application</string>
+    <string name="a11y_hand_camera">Main prenant une photo</string>
+    <string name="a11y_mail">Envoyer un e-mail</string>
+    <string name="a11y_github">Ouvrir le code source sur GitHub</string>
+    <string name="a11y_grid_part">Partager la partie %1$d de la grille</string>
+    <string name="a11y_grid_miniature">Ouvrir la grille</string>
 </resources>

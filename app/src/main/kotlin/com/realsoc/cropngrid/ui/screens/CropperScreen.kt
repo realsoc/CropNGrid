@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -252,7 +251,10 @@ fun CropperScreen(
             ) },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.a11y_back)
+                    )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme
@@ -325,7 +327,6 @@ fun CropperScreen(
                         val verticalMargin = (size.height * 0.10f).toDp()
                         val horizontalMargin = (size.width * 0.10f).toDp()
                         val sliderPadding = 30.dp
-                        var columnSliderPosition by remember { mutableFloatStateOf(gridParameters.columnNumber.toFloat()) }
                         val rowSliderWidth = 400.dp
                         val columnSliderWidth = rowSliderWidth * 3/5 + sliderPadding
                         val columnInteractionSource = remember { MutableInteractionSource() }
@@ -334,9 +335,7 @@ fun CropperScreen(
                             value = gridParameters.columnNumber.toFloat(),
                             onValueChange = { newValue ->
                                 controlsInUse()
-                                columnSliderPosition = newValue
-                                val columnNumber = newValue.roundToInt()
-                                onGridParameters(gridParameters.copy(columnNumber = columnNumber))
+                                onGridParameters(gridParameters.copy(columnNumber = newValue.roundToInt()))
                             },
                             onValueChangeFinished = { restartHideControlsTimer() },
                             steps = 1,
@@ -355,14 +354,11 @@ fun CropperScreen(
                                 )
                             }
                         )
-                        var rowSliderPosition by remember { mutableFloatStateOf(gridParameters.rowNumber.toFloat()) }
                         Slider(
                             value = gridParameters.rowNumber.toFloat(),
                             onValueChange = { newValue ->
                                 controlsInUse()
-                                rowSliderPosition = newValue
-                                val rowNumber = rowSliderPosition.roundToInt()
-                                onGridParameters(gridParameters.copy(rowNumber = rowNumber))
+                                onGridParameters(gridParameters.copy(rowNumber = newValue.roundToInt()))
                             },
                             onValueChangeFinished = { restartHideControlsTimer() },
                             steps = 3,
