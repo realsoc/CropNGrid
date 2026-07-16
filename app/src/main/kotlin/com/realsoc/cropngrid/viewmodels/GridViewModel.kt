@@ -1,6 +1,7 @@
 package com.realsoc.cropngrid.viewmodels
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -12,8 +13,10 @@ import com.realsoc.cropngrid.decode
 import com.realsoc.cropngrid.getBitmap
 import com.realsoc.cropngrid.models.Grid
 import com.realsoc.cropngrid.navigation.GridArgs
+import com.realsoc.cropngrid.safeRecycle
 import com.realsoc.cropngrid.toUri
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,19 +33,32 @@ class GridViewModel @Inject constructor(
     private val gridRepository: GridRepository,
     private val pictureRepository: PictureRepository
 ): AndroidViewModel(application) {
-    suspend fun saveGrid(grid: Grid) {
-        withContext(Dispatchers.IO) {
-            grid.parts.mapIndexed { rowCount, row ->
-                row.mapIndexed { columnCount, part ->
+    /**
+     * Saves all grid parts to public storage. Returns true if every part was saved.
+     */
+    suspend fun saveGrid(grid: Grid): Boolean = withContext(Dispatchers.IO) {
+        try {
+            grid.parts.forEachIndexed { rowCount, row ->
+                row.forEachIndexed { columnCount, part ->
                     val bitmap = getApplication<Application>().contentResolver.getBitmap(decode(part).toUri())
-                    pictureRepository.saveImage(
-                        getApplication(),
-                        bitmap,
-                        grid.name + ".$rowCount.$columnCount",
-                        true
-                    )
+                    try {
+                        pictureRepository.saveImage(
+                            getApplication(),
+                            bitmap,
+                            grid.name + ".$rowCount.$columnCount",
+                            true
+                        )
+                    } finally {
+                        bitmap.safeRecycle()
+                    }
                 }
             }
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to save grid parts", e)
+            false
         }
     }
 

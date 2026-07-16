@@ -14,6 +14,8 @@
     <string name="delete">Excluir</string>
     <string name="delete_confirmation_question">Tem certeza de que deseja excluir este arquivo?</string>
     <string name="download_grid_parts">Baixar partes da grade</string>
+    <string name="download_success">Partes da grade salvas</string>
+    <string name="download_failure">Não foi possível salvar as partes da grade</string>
     <string name="confirm_download_parts">Você está prestes a baixar as partes da imagem na memória do seu telefone</string>
     <string name="go_to_grid">Quero ver</string>
     <string name="success_cropping">Recorte bem-sucedido</string>

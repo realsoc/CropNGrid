@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -58,6 +60,9 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.analytics.TrackDialogDisplayed
@@ -113,14 +118,19 @@ fun GridRoute(
             onGridDeleted()
             viewModel.deleteGrid(it)
         },
-        onSaveGrid = {
+        onSaveGrid = { grid ->
             analyticsHelper.buttonClick(SCREEN_NAME, "download_confirmed")
-            viewModel.saveGrid(it)
+            val success = viewModel.saveGrid(grid)
+            Toast.makeText(
+                context,
+                context.getString(if (success) R.string.download_success else R.string.download_failure),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     )
 
 }
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun GridScreen(
@@ -139,6 +149,25 @@ fun GridScreen(
         var requiredAction by remember { mutableStateOf<GridScreenActions?>(null) }
 
         var loading by remember { mutableStateOf(false) }
+
+        // Writing to public storage requires a runtime permission grant before Android 10
+        var pendingDownload by remember { mutableStateOf<Grid?>(null) }
+        val writePermissionState = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            rememberPermissionState(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+                pendingDownload?.let { grid ->
+                    pendingDownload = null
+                    if (granted) {
+                        coroutineScope.launch {
+                            loading = true
+                            onSaveGrid(grid)
+                            loading = false
+                        }
+                    }
+                }
+            }
+        } else {
+            null
+        }
 
         if (loading) {
             LoadingView()
@@ -172,11 +201,20 @@ fun GridScreen(
                         DialogButtons(
                             onDismissRequest = { requiredAction = null },
                             onConfirm = {
-                                coroutineScope.launch {
-                                    loading = true
-                                    callback(action.grid)
+                                if (action is GridScreenActions.Download &&
+                                    writePermissionState != null &&
+                                    !writePermissionState.status.isGranted
+                                ) {
+                                    pendingDownload = action.grid
                                     requiredAction = null
-                                    loading = false
+                                    writePermissionState.launchPermissionRequest()
+                                } else {
+                                    coroutineScope.launch {
+                                        loading = true
+                                        callback(action.grid)
+                                        requiredAction = null
+                                        loading = false
+                                    }
                                 }
                             },
                             enabled = !loading
