@@ -1,11 +1,11 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
-    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.realsoc.cropngrid"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 3
         versionName = "1.0"
@@ -36,18 +36,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
     }
     packaging {
         resources {
@@ -71,13 +68,13 @@ dependencies {
     // com.google.* version number
     val gsonVersion = "2.11.0"
     val hiltComposeVersion = "1.2.0"
-    val accompagnistVersion = "0.32.0"
-    val daggerVersion = "2.51"
+    val accompagnistVersion = "0.37.3"
+    val daggerVersion = "2.56.2"
 
     val firebaseBom = "34.0.0"
 
     // third parties version number
-    val coilVersion = "2.5.0"
+    val coilVersion = "2.7.0"
     val lottieVersion = "6.3.0"
 
 
@@ -113,8 +110,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
 
     releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
-    releaseImplementation("com.google.firebase:firebase-analytics-ktx")
-    releaseImplementation("com.google.firebase:firebase-crashlytics-ktx")
+    releaseImplementation("com.google.firebase:firebase-analytics")
+    releaseImplementation("com.google.firebase:firebase-crashlytics")
 
 
     // third parties
