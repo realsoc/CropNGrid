@@ -14,12 +14,12 @@ android {
         }
     }
     namespace = "com.realsoc.cropngrid"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.realsoc.cropngrid"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 3
         versionName = "1.0"
 
@@ -58,27 +58,27 @@ android {
 
 dependencies {
     // androidx.* version number
-    val navVersion = "2.7.5"
-    val roomVersion = "2.6.0"
+    val navVersion = "2.9.2"
+    val roomVersion = "2.7.2"
     val splashScreenVersion = "1.0.1"
-    val material3Version = "1.1.2"
-    val datastoreVersion = "1.0.0"
-    val activityComposeVersion = "1.8.0"
-    val lifecycleVersion = "2.6.2"
+    val material3Version = "1.3.2"
+    val datastoreVersion = "1.1.7"
+    val activityComposeVersion = "1.10.1"
+    val lifecycleVersion = "2.9.2"
 
-    val composeBom = "2023.10.01"
+    val composeBom = "2025.07.00"
 
     // com.google.* version number
-    val gsonVersion = "2.10.1"
-    val hiltComposeVersion = "1.1.0"
+    val gsonVersion = "2.11.0"
+    val hiltComposeVersion = "1.2.0"
     val accompagnistVersion = "0.32.0"
-    val daggerVersion = "2.48.1"
+    val daggerVersion = "2.51"
 
-    val firebaseBom = "32.5.0"
+    val firebaseBom = "34.0.0"
 
     // third parties version number
     val coilVersion = "2.5.0"
-    val lottieVersion = "6.1.0"
+    val lottieVersion = "6.3.0"
 
 
     // androidx.*
@@ -96,8 +96,8 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:$composeBom"))
     implementation("androidx.compose.material3:material3")
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
