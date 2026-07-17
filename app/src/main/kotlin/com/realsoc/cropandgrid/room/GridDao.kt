@@ -1,0 +1,45 @@
+package com.realsoc.cropandgrid.room
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.TypeConverter
+import com.google.gson.Gson
+import com.realsoc.cropandgrid.models.Grid
+import com.realsoc.cropandgrid.models.GridUris
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface GridDao {
+    @Insert
+    suspend fun insertAll(vararg grids: Grid)
+
+    @Delete
+    suspend fun delete(grid: Grid)
+
+    @Query("SELECT * FROM grids")
+    suspend fun getAll(): List<Grid>
+
+    // Nullable: Room emits null when no row matches (e.g. right after deletion)
+    @Query("SELECT * FROM grids WHERE id = :id")
+    fun loadGridById(id: String): Flow<Grid?>
+
+    @Query("SELECT * from grids")
+    fun loadGrids(): Flow<List<Grid>>
+}
+
+
+class Converters {
+    private val gson = Gson()
+
+    @TypeConverter
+    fun fromJson(parts: String): GridUris {
+        return gson.fromJson(parts)
+    }
+
+    @TypeConverter
+    fun toJson(parts: GridUris): String {
+        return gson.toJson(parts)
+    }
+}

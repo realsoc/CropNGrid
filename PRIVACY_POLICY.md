@@ -22,8 +22,9 @@ https://github.com/realsoc/CropNGrid/blob/720fe1aaf892fe1e5ad4bc576bac151feee931
 
 | Permission | Why it is required |
 | :---: | -- |
-| `android.permission.READ_MEDIA_IMAGES` | Required to pick images from the phone memory. No permission: no images; no images: no crop no grid. The app would then be called NoCropNorGrid |
-| `android.permission.WRITE_EXTERNAL_STORAGE` | Required for android < 10 in order to save images in the external storage.  |
+| `android.permission.WRITE_EXTERNAL_STORAGE` | Required for android < 10 in order to save images in the external storage. Only requested when you download grid parts. |
+
+Picking images uses the Android system photo picker, which requires no permission.
 
  <hr style="border:1px solid gray">
 
