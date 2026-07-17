@@ -27,7 +27,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.realsoc.cropngrid.provider"
+            android:authorities="com.realsoc.cropandgrid.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
