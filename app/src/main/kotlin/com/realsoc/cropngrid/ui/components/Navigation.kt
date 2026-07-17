@@ -100,43 +100,6 @@ fun CropNGridNavigationRail(
         content = content,
     )
 }
-/*
-@Composable
-fun CropNGridNavigationPreview() {
-    val items = listOf("Home", "Grid List")
-    val icons = listOf(
-        Icons.Outlined.Home,
-        Icons.Outlined.List,
-    )
-    val selectedIcons = listOf(
-        Icons.Filled.Home,
-        Icons.Filled.List,
-    )
-
-    CropNGridTheme {
-        CropNGridNavigationBar {
-            items.forEachIndexed { index, item ->
-                CropNGridNavigationBarItem(
-                    icon = {
-                        Icon(
-                            imageVector = icons[index],
-                            contentDescription = item,
-                        )
-                    },
-                    selectedIcon = {
-                        Icon(
-                            imageVector = selectedIcons[index],
-                            contentDescription = item,
-                        )
-                    },
-                    label = { Text(item) },
-                    selected = index == 0,
-                    onClick = { },
-                )
-            }
-        }
-    }
-}*/
 
 object CropNGridNavigationDefaults {
     @Composable

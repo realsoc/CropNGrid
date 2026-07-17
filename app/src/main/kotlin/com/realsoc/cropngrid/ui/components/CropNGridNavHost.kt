@@ -2,6 +2,7 @@ package com.realsoc.cropngrid.ui.components
 
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import com.realsoc.cropngrid.navigation.Transitions
@@ -30,32 +31,34 @@ fun CropNGridNavHost(
 
     val navController = appState.navController
 
-    val transitions = Transitions.BASE
-        .addTransition(
-            homeNavigationRoute,
-            gridListNavigationRoute,
-            rightToLeftTransition(EaseOutCubic, 500)
-        ).addTransition(
-            gridListNavigationRoute,
-            homeNavigationRoute,
-            leftToRightTransition(EaseOutCubic, 500)
-        ).addTransition(
-            gridListNavigationRoute,
-            infoNavigationRoute,
-            leftToRightTransition(EaseOutCubic, 500)
-        ).addTransition(
-            infoNavigationRoute,
-            gridListNavigationRoute,
-            rightToLeftTransition(EaseOutCubic, 500)
-        ).addTransition(
-            homeNavigationRoute,
-            infoNavigationRoute,
-            rightToLeftTransition(EaseOutCubic, 500)
-        ).addTransition(
-            infoNavigationRoute,
-            homeNavigationRoute,
-            leftToRightTransition(EaseOutCubic, 500)
-        )
+    val transitions = remember {
+        Transitions.BASE
+            .addTransition(
+                homeNavigationRoute,
+                gridListNavigationRoute,
+                rightToLeftTransition(EaseOutCubic, 500)
+            ).addTransition(
+                gridListNavigationRoute,
+                homeNavigationRoute,
+                leftToRightTransition(EaseOutCubic, 500)
+            ).addTransition(
+                gridListNavigationRoute,
+                infoNavigationRoute,
+                leftToRightTransition(EaseOutCubic, 500)
+            ).addTransition(
+                infoNavigationRoute,
+                gridListNavigationRoute,
+                rightToLeftTransition(EaseOutCubic, 500)
+            ).addTransition(
+                homeNavigationRoute,
+                infoNavigationRoute,
+                rightToLeftTransition(EaseOutCubic, 500)
+            ).addTransition(
+                infoNavigationRoute,
+                homeNavigationRoute,
+                leftToRightTransition(EaseOutCubic, 500)
+            )
+    }
 
 
     NavHost(
@@ -82,20 +85,17 @@ fun CropNGridNavHost(
                 navController.navigateToGridList()
                 navController.navigateToGrid(it)
                              },
-            coroutineScope = appState.coroutineScope,
             onBackClick = {
                 navController.popBackStack()
             }
         )
         gridScreen(
-            coroutineScope = appState.coroutineScope,
             onGridDeleted = navController::popBackStack,
             onBackClick = {
                 navController.popBackStack()
             }
         )
         infoScreen(
-            coroutineScope = appState.coroutineScope,
             onShowSnackbar = onShowSnackbar
         )
     }

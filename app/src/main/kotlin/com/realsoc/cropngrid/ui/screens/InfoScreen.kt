@@ -30,8 +30,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.ui.components.TheZebraSpacer
@@ -57,7 +58,6 @@ import com.realsoc.cropngrid.ui.theme.Blue
 import com.realsoc.cropngrid.ui.theme.Lemon
 import com.realsoc.cropngrid.viewmodels.InfoUiState
 import com.realsoc.cropngrid.viewmodels.InfoViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -67,7 +67,6 @@ private const val SCREEN_NAME = "info"
 
 @Composable
 fun InfoRoute(
-    coroutineScope: CoroutineScope,
     onShowSnackbar: suspend (String, String?) -> Boolean,
     modifier: Modifier = Modifier,
     viewModel: InfoViewModel = hiltViewModel(),
@@ -75,8 +74,9 @@ fun InfoRoute(
 
     val context = LocalContext.current
     val analyticsHelper = LocalAnalyticsHelper.current
+    val coroutineScope = rememberCoroutineScope()
 
-    val uiState by viewModel.infoUiState.collectAsState()
+    val uiState by viewModel.infoUiState.collectAsStateWithLifecycle()
 
     val githubIntent = Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse(GITHUB_ADDRESS)
@@ -145,7 +145,7 @@ fun InfoScreen(
         ) {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.logo_crop),
-                contentDescription = "Application logo",
+                contentDescription = stringResource(R.string.a11y_app_logo),
                 tint = primaryColor,
                 modifier = Modifier
                     .width(100.dp)
@@ -235,7 +235,7 @@ fun InfoScreen(
                             ) {
                                 Icon(
                                     imageVector = CropNGridIcons.FilledMail,
-                                    contentDescription = "Mail icon button",
+                                    contentDescription = stringResource(R.string.a11y_mail),
                                     modifier = Modifier
                                         .padding(10.dp),
                                     tint = primaryColor
@@ -248,7 +248,7 @@ fun InfoScreen(
                             ) {
                                 Icon(
                                     imageVector = CropNGridIcons.FilledGithub,
-                                    contentDescription = "Github icon button",
+                                    contentDescription = stringResource(R.string.a11y_github),
                                     modifier = Modifier
                                         .padding(10.dp),
                                     tint = primaryColor

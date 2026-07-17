@@ -3,6 +3,7 @@ package com.realsoc.cropngrid.ui.screens
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -23,7 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,9 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,16 +49,19 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.realsoc.cropngrid.R
@@ -87,10 +91,12 @@ import com.realsoc.cropngrid.ui.toVector
 import com.realsoc.cropngrid.ui.vectorTo
 import com.realsoc.cropngrid.viewmodels.CropperViewModel
 import com.realsoc.cropngrid.viewmodels.CroppingUiState
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Float.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -99,7 +105,6 @@ private const val SCREEN_NAME = "cropper"
 
 @Composable
 internal fun CropperRoute(
-    coroutineScope: CoroutineScope,
     onCropComplete: (String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -110,12 +115,12 @@ internal fun CropperRoute(
 
     CropperScreen(
         uri = viewModel.pictureUri,
-        coroutineScope = coroutineScope,
         gridParameters = gridParameters,
         onGridParameters = { viewModel.updateGridParameters(it) },
         onBackClick = onBackClick,
         croppingUiState = croppingUiState,
         onCrop = viewModel::makeGrid,
+        onCropDialogDismissed = viewModel::resetCroppingState,
         onCropComplete = onCropComplete,
         modifier = modifier
     )
@@ -125,12 +130,12 @@ internal fun CropperRoute(
 @Composable
 fun CropperScreen(
     uri: Uri,
-    coroutineScope: CoroutineScope,
     gridParameters: GridParameters,
     onGridParameters: (GridParameters) -> Unit,
     onBackClick: () -> Unit,
     croppingUiState: CroppingUiState?,
-    onCrop: suspend (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
+    onCrop: (Bitmap, Rect, List<List<Rect>>, CoordinateSystem, String?) -> Unit,
+    onCropDialogDismissed: () -> Unit,
     onCropComplete: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -138,27 +143,32 @@ fun CropperScreen(
     TrackScreenViewEvent(screenName = SCREEN_NAME)
 
     val analyticsHelper = LocalAnalyticsHelper.current
+    val coroutineScope = rememberCoroutineScope()
 
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var name by remember { mutableStateOf<String?>(null) }
 
     var showControls by remember { mutableStateOf(false) }
-    var gridControlsVisibilityJob: Job = remember { Job() }
+    // Holder survives recompositions; a plain var would reset to the first remembered Job
+    val gridControlsVisibilityJob = remember { mutableStateOf<Job?>(null) }
 
     var showCropDialog by remember { mutableStateOf(false) }
 
     var coordinateSystem by remember { mutableStateOf(CoordinateSystem()) }
-    var gridArea by remember { mutableStateOf(Rect(0f, 0f, 100f, 100f)) }
 
-    var gridPartAreas: List<List<Rect>> by remember { mutableStateOf(listOf()) }
+    var canvasSize by remember { mutableStateOf(Size.Zero) }
+    val gridArea = remember(gridParameters, canvasSize) {
+        if (canvasSize == Size.Zero) Rect.Zero
+        else calculateGridArea(gridParameters, canvasSize.width, canvasSize.height)
+    }
 
-    LaunchedEffect(gridArea, gridParameters) {
-        gridPartAreas = getCropGrid(gridArea, gridParameters)
+    val gridPartAreas: List<List<Rect>> = remember(gridArea, gridParameters) {
+        getCropGrid(gridArea, gridParameters)
     }
 
     val restartHideControlsTimer = {
-        gridControlsVisibilityJob.cancel()
-        gridControlsVisibilityJob = coroutineScope.launch {
+        gridControlsVisibilityJob.value?.cancel()
+        gridControlsVisibilityJob.value = coroutineScope.launch {
             showControls = true
             delay(1500)
             showControls = false
@@ -166,13 +176,11 @@ fun CropperScreen(
     }
 
     val controlsInUse = {
-        gridControlsVisibilityJob.cancel()
-        gridControlsVisibilityJob = coroutineScope.launch {
-            showControls = true
-        }
+        gridControlsVisibilityJob.value?.cancel()
+        showControls = true
     }
 
-    LoadBitmap(uri = uri) {
+    LoadBitmap(uri = uri, onError = onBackClick) {
         bitmap = it
         coordinateSystem = coordinateSystem.withPivot(it.frame.center.toPoint())
         restartHideControlsTimer()
@@ -182,14 +190,19 @@ fun CropperScreen(
         name = it
     }
 
-    // Setup initial state when bitmap and grid area are loaded
-    LaunchedEffect(bitmap) {
-        bitmap?.let { bitmap ->
-            // The last scale allowing the image to fit entirely in the grid
-            val minScale = min(gridArea.width / bitmap.width, gridArea.height / bitmap.height)
-            coordinateSystem = coordinateSystem.withMinScale(minScale)
+    // Fit the image into the grid once both the bitmap and the measured grid area are known,
+    // and keep the minimum zoom in sync when the grid area changes
+    var initialFitDone by remember(bitmap) { mutableStateOf(false) }
+    LaunchedEffect(bitmap, gridArea) {
+        val loadedBitmap = bitmap ?: return@LaunchedEffect
+        if (gridArea == Rect.Zero) return@LaunchedEffect
+        // The last scale allowing the image to fit entirely in the grid
+        val minScale = min(gridArea.width / loadedBitmap.width, gridArea.height / loadedBitmap.height)
+        coordinateSystem = coordinateSystem.withMinScale(minScale)
+        if (!initialFitDone) {
+            initialFitDone = true
             animateToInitialState(
-                bitmap.frame,
+                loadedBitmap.frame,
                 gridArea,
                 coordinateSystem.pivot,
                 coordinateSystem.transformation
@@ -208,10 +221,13 @@ fun CropperScreen(
                 gridParameters = gridParameters,
                 onCropComplete,
                 croppingUiState,
-                onDismissRequest = { showCropDialog = false },
+                onDismissRequest = {
+                    showCropDialog = false
+                    onCropDialogDismissed()
+                },
                 onConfirmCrop = {
                     analyticsHelper.gridCropped(gridParameters.columnNumber, gridParameters.rowNumber)
-                    coroutineScope.launch { onCrop(it, gridArea, gridPartAreas, coordinateSystem, name) }
+                    onCrop(it, gridArea, gridPartAreas, coordinateSystem, name)
                 }
             )
         }
@@ -235,7 +251,10 @@ fun CropperScreen(
             ) },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.a11y_back)
+                    )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme
@@ -249,6 +268,7 @@ fun CropperScreen(
             Box(
                 Modifier
                     .fillMaxSize()
+                    .onSizeChanged { canvasSize = it.toSize() }
                     .background(MaterialTheme.colorScheme.surface)
                     .drawWithContent {
                         drawContent()
@@ -268,14 +288,16 @@ fun CropperScreen(
                                     restartHideControlsTimer()
                                 },
                                 onDoubleTap = {
-                                    coroutineScope.launch {
-                                        animateToInitialState(
-                                            bitmap!!.frame,
-                                            gridArea,
-                                            coordinateSystem.pivot,
-                                            coordinateSystem.transformation
-                                        ) { state, _ ->
-                                            coordinateSystem = coordinateSystem.withTransformation(state)
+                                    bitmap?.let { loadedBitmap ->
+                                        coroutineScope.launch {
+                                            animateToInitialState(
+                                                loadedBitmap.frame,
+                                                gridArea,
+                                                coordinateSystem.pivot,
+                                                coordinateSystem.transformation
+                                            ) { state, _ ->
+                                                coordinateSystem = coordinateSystem.withTransformation(state)
+                                            }
                                         }
                                     }
                                 }
@@ -295,14 +317,6 @@ fun CropperScreen(
                     }
                 }
             }
-            // Calculate grid was isolated here to calculate only when it's required
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                gridArea = calculateGridArea(
-                    gridParameters,
-                    constraints.maxWidth.toFloat(),
-                    constraints.maxHeight.toFloat()
-                )
-            }
             AnimatedVisibility(
                 visible = showControls,
                 enter = fadeIn(animationSpec = tween(500)),
@@ -313,7 +327,6 @@ fun CropperScreen(
                         val verticalMargin = (size.height * 0.10f).toDp()
                         val horizontalMargin = (size.width * 0.10f).toDp()
                         val sliderPadding = 30.dp
-                        var columnSliderPosition by remember { mutableFloatStateOf(gridParameters.columnNumber.toFloat()) }
                         val rowSliderWidth = 400.dp
                         val columnSliderWidth = rowSliderWidth * 3/5 + sliderPadding
                         val columnInteractionSource = remember { MutableInteractionSource() }
@@ -322,9 +335,7 @@ fun CropperScreen(
                             value = gridParameters.columnNumber.toFloat(),
                             onValueChange = { newValue ->
                                 controlsInUse()
-                                columnSliderPosition = newValue
-                                val columnNumber = newValue.roundToInt()
-                                onGridParameters(gridParameters.copy(columnNumber = columnNumber))
+                                onGridParameters(gridParameters.copy(columnNumber = newValue.roundToInt()))
                             },
                             onValueChangeFinished = { restartHideControlsTimer() },
                             steps = 1,
@@ -343,14 +354,11 @@ fun CropperScreen(
                                 )
                             }
                         )
-                        var rowSliderPosition by remember { mutableFloatStateOf(gridParameters.rowNumber.toFloat()) }
                         Slider(
                             value = gridParameters.rowNumber.toFloat(),
                             onValueChange = { newValue ->
                                 controlsInUse()
-                                rowSliderPosition = newValue
-                                val rowNumber = rowSliderPosition.roundToInt()
-                                onGridParameters(gridParameters.copy(rowNumber = rowNumber))
+                                onGridParameters(gridParameters.copy(rowNumber = newValue.roundToInt()))
                             },
                             onValueChangeFinished = { restartHideControlsTimer() },
                             steps = 3,
@@ -394,14 +402,17 @@ fun CropperScreen(
 
 
 @Composable
-fun LoadBitmap(uri: Uri, onLoaded: (Bitmap) -> Unit) {
+fun LoadBitmap(uri: Uri, onError: () -> Unit = {}, onLoaded: (Bitmap) -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.getBitmap(uri)
-        }.let {
-            onLoaded(it)
+        try {
+            onLoaded(context.contentResolver.getBitmap(uri))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to load image $uri", e)
+            onError()
         }
     }
 }
@@ -411,17 +422,21 @@ fun LoadName(uri: Uri, onLoaded: (String?) -> Unit) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
-        with(context) {
-            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                cursor.moveToFirst()
-                cursor.getString(nameIndex).let {
-                    it.substring(0, it.lastIndexOf("."));
+        val displayName = withContext(Dispatchers.IO) {
+            try {
+                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0 && cursor.moveToFirst()) cursor.getString(nameIndex) else null
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("CropNGrid", "Failed to read display name of $uri", e)
+                null
             }
-        }.let {
-            onLoaded(it)
         }
+        // Some providers return names without an extension: keep the full name then
+        onLoaded(displayName?.substringBeforeLast('.'))
     }
 }
 

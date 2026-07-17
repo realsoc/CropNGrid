@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="photo_picked">Photo picked</string>
-    <string name="saving_picture_parts">Save picture parts</string>
-    <string name="action">Action</string>
-    <string name="permission_needed">The application requires the storage permission</string>
-    <string name="grant">Grant</string>
     <string name="app_description_home">Choose a photo from the gallery and crop it directly for your Instagram feed!</string>
     <string name="start">Start</string>
     <string name="crop_history">Crop History</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
-    <string name="grid_parameters">Grid parameters</string>
     <string name="delete">Delete</string>
     <string name="delete_confirmation_question">Are you sure you want to delete this file?</string>
     <string name="download_grid_parts">Download grid parts</string>
+    <string name="download_success">Grid parts saved</string>
+    <string name="download_failure">Could not save the grid parts</string>
+    <string name="delete_failure">Could not delete the grid</string>
+    <string name="crop_failure">Something went wrong while cropping the image</string>
     <string name="confirm_download_parts">You are about to download the picture parts in your phone memory</string>
     <string name="go_to_grid">Let\'s see</string>
     <string name="success_cropping">Success cropping</string>
@@ -27,11 +25,14 @@
     <string name="app_description_first_part">App developed and maintained by </string>
     <string name="app_description_third_part">. Source code available on Github. Feel free to contact me if you encounter any issues while using the app or to send your improvement suggestions.</string>
     <string name="grid">Grid</string>
-    <string name="please_accept_rationnaly">For this application to work, you need to grant the
-        storage permission</string>
-    <string name="accept">Accept</string>
     <string name="have_you_think_about_cropping_an_image_yet">Have you think about cropping an image yet?</string>
-    <string name="permission_recused">You recused the storage permission, CropNGrid won\'t work</string>
-    <string name="fix">Fix</string>
     <string name="no_mail_app">No application found to send mail.</string>
+    <string name="share_to">Share to</string>
+    <string name="a11y_back">Back</string>
+    <string name="a11y_app_logo">Application logo</string>
+    <string name="a11y_hand_camera">Hand taking a picture</string>
+    <string name="a11y_mail">Send an email</string>
+    <string name="a11y_github">Open the source code on GitHub</string>
+    <string name="a11y_grid_part">Share grid part %1$d</string>
+    <string name="a11y_grid_miniature">Open grid</string>
 </resources>

@@ -5,27 +5,32 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStream
-import java.util.Objects
 import javax.inject.Inject
 
 
 interface PictureRepository {
+    /**
+     * Saves the bitmap and returns its Uri, or throws on failure.
+     */
+    @Throws(IOException::class)
     suspend fun saveImage(
         context: Application,
         bitmap: Bitmap,
         name: String,
         sharable: Boolean = false
-    ): Uri?
+    ): Uri
 }
 
 class PictureRepositoryImpl @Inject constructor() : PictureRepository {
@@ -33,43 +38,26 @@ class PictureRepositoryImpl @Inject constructor() : PictureRepository {
     override suspend fun saveImage(
         context: Application, bitmap: Bitmap, name: String,
         sharable: Boolean
-    ):
-            Uri? {
-        return if (SDK_INT >= Build.VERSION_CODES.Q) {
-            try {
-                if (sharable) {
-                    savePublicImageInAndroidApi29AndAbove(context.contentResolver, bitmap, name)
-                } else {
-                    savePrivateImage(context, bitmap, name)
-                }
-            } catch (e: Exception) {
-
-                println(e)
-                null
+    ): Uri = withContext(Dispatchers.IO) {
+        if (sharable) {
+            if (SDK_INT >= Build.VERSION_CODES.Q) {
+                savePublicImageInAndroidApi29AndAbove(context.contentResolver, bitmap, name)
+            } else {
+                savePublicImageInAndroidApi28AndBelow(context, bitmap, name)
             }
         } else {
-            try {
-                if (sharable) {
-                    savePublicImageInAndroidApi28AndBelow(bitmap, name)
-                } else {
-                    savePrivateImage(context, bitmap, name)
-                }
-            } catch (e: Exception) {
-                // Todo : what to do here
-                println(e)
-                null
-            }
+            savePrivateImage(context, bitmap, name)
         }
     }
 
     @Throws(IOException::class)
-    private fun savePublicImageInAndroidApi28AndBelow(bitmap: Bitmap, name: String): Uri {
-        val fos: OutputStream
-        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
+    private fun savePublicImageInAndroidApi28AndBelow(context: Context, bitmap: Bitmap, name: String): Uri {
+        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        imagesDir.mkdirs()
         val image = File(imagesDir, "$name.png")
-        fos = FileOutputStream(image)
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-        Objects.requireNonNull<OutputStream>(fos).close()
+        image.writeBitmap(bitmap)
+        // Make the file visible to gallery and file manager apps
+        MediaScannerConnection.scanFile(context, arrayOf(image.absolutePath), arrayOf("image/png"), null)
 
         return Uri.fromFile(image)
     }
@@ -81,6 +69,8 @@ class PictureRepositoryImpl @Inject constructor() : PictureRepository {
         values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
         if (SDK_INT >= Build.VERSION_CODES.Q) {
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
+            // Hide the entry from other apps until it is fully written
+            values.put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
         var uri: Uri? = null
         return try {
@@ -97,8 +87,13 @@ class PictureRepositoryImpl @Inject constructor() : PictureRepository {
                     throw IOException("Failed to save bitmap.")
                 }
             }
+            if (SDK_INT >= Build.VERSION_CODES.Q) {
+                values.clear()
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                resolver.update(uri, values, null, null)
+            }
             uri
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             if (uri != null) {
                 resolver.delete(uri, null, null)
             }
@@ -106,13 +101,26 @@ class PictureRepositoryImpl @Inject constructor() : PictureRepository {
         }
     }
 
+    @Throws(IOException::class)
     private fun savePrivateImage(context: Context, bitmap: Bitmap, name: String): Uri {
-        val fos: OutputStream
         val image = File(context.filesDir, "$name.png")
-        fos = FileOutputStream(image)
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-        Objects.requireNonNull<OutputStream>(fos).close()
+        image.writeBitmap(bitmap)
 
         return FileProvider.getUriForFile(context, "com.realsoc.cropngrid.provider", image)
+    }
+
+    @Throws(IOException::class)
+    private fun File.writeBitmap(bitmap: Bitmap) {
+        try {
+            FileOutputStream(this).use { fos ->
+                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)) {
+                    throw IOException("Failed to save bitmap to $path.")
+                }
+            }
+        } catch (e: Exception) {
+            // Do not leave a truncated file behind
+            delete()
+            throw e
+        }
     }
 }

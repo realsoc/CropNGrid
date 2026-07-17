@@ -1,5 +1,6 @@
 package com.realsoc.cropngrid.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.realsoc.cropngrid.data.PreferencesRepository
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,7 +25,11 @@ class InfoViewModel @Inject constructor(
     fun onLogGranted(logGranted: Boolean) {
         viewModelScope.launch {
             analyticsHelper.logLogGranted(logGranted)
-            preferencesRepository.setLogGranted(logGranted)
+            try {
+                preferencesRepository.setLogGranted(logGranted)
+            } catch (e: IOException) {
+                Log.e("CropNGrid", "Failed to persist analytics preference", e)
+            }
         }
     }
 

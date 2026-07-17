@@ -10,7 +10,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.realsoc.cropngrid.ui.screens.InfoRoute
 import com.realsoc.cropngrid.ui.theme.Blue
-import kotlinx.coroutines.CoroutineScope
 
 const val infoNavigationRoute = "info"
 
@@ -25,14 +24,12 @@ fun NavController.navigateToInfo() {
 }
 
 fun NavGraphBuilder.infoScreen(
-    coroutineScope: CoroutineScope,
     onShowSnackbar: suspend (String, String?) -> Boolean
 ) {
     composable(
         route = infoNavigationRoute
     ) {
         InfoRoute(
-            coroutineScope = coroutineScope,
             modifier = Modifier.background(if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surface else Blue),
             onShowSnackbar = onShowSnackbar
         )

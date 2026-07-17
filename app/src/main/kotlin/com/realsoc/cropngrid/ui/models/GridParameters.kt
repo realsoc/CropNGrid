@@ -20,7 +20,8 @@ data class GridParameters(
         }
 
     val ratioAsString: String
-        get() = RATIO_VALUES.first { abs(it.second - ratio) < 0.001f }.first
+        get() = RATIO_VALUES.firstOrNull { abs(it.second - ratio) < 0.001f }?.first
+            ?: "%.2f".format(ratio)
 
     fun getWidthAndHeight(limitingSide: Float): Pair<Float, Float> {
         var width = 1f

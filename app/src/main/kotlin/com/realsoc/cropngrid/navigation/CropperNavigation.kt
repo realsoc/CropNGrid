@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import com.realsoc.cropngrid.encode
 import com.realsoc.cropngrid.toUri
 import com.realsoc.cropngrid.ui.screens.CropperRoute
-import kotlinx.coroutines.CoroutineScope
 
 
 @VisibleForTesting
@@ -27,7 +26,6 @@ fun NavController.navigateToCropper(uri: Uri) {
 
 fun NavGraphBuilder.cropperScreen(
     onCropComplete: (String) -> Unit,
-    coroutineScope: CoroutineScope,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -35,7 +33,6 @@ fun NavGraphBuilder.cropperScreen(
     ) {
         CropperRoute(
             onCropComplete = onCropComplete,
-            coroutineScope = coroutineScope,
             onBackClick = onBackClick
         )
     }

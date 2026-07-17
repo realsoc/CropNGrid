@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -23,7 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +61,9 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.realsoc.cropngrid.R
 import com.realsoc.cropngrid.analytics.LocalAnalyticsHelper
 import com.realsoc.cropngrid.analytics.TrackDialogDisplayed
@@ -74,7 +81,7 @@ import com.realsoc.cropngrid.ui.drawTextOverlay
 import com.realsoc.cropngrid.ui.icons.FilledDownload
 import com.realsoc.cropngrid.viewmodels.GridUiState
 import com.realsoc.cropngrid.viewmodels.GridViewModel
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 private const val SCREEN_NAME = "grid"
@@ -84,13 +91,12 @@ fun Context.shareUri(uri: Uri) {
     val share = Intent(Intent.ACTION_SEND)
     share.type = type
     share.putExtra(Intent.EXTRA_STREAM, uri)
-    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-    startActivity(Intent.createChooser(share, "Share to"));
+    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    startActivity(Intent.createChooser(share, getString(R.string.share_to)))
 }
 
 @Composable
 fun GridRoute(
-    coroutineScope: CoroutineScope,
     onGridDeleted: () -> Unit,
     onBackClick: () -> Unit,
     viewModel: GridViewModel = hiltViewModel(),
@@ -100,29 +106,35 @@ fun GridRoute(
     val analyticsHelper = LocalAnalyticsHelper.current
 
     GridScreen(
-        coroutineScope,
         gridUiState = gridUiState,
         onPartClick = {
             analyticsHelper.buttonClick(SCREEN_NAME, "share")
             context.shareUri(it) },
         onBackClick = onBackClick,
-        onDeleteGrid = {
+        onDeleteGrid = { grid ->
             analyticsHelper.buttonClick(SCREEN_NAME, "delete_confirmed")
-            onGridDeleted()
-            viewModel.deleteGrid(it)
+            if (viewModel.deleteGrid(grid)) {
+                onGridDeleted()
+            } else {
+                Toast.makeText(context, context.getString(R.string.delete_failure), Toast.LENGTH_SHORT).show()
+            }
         },
-        onSaveGrid = {
+        onSaveGrid = { grid ->
             analyticsHelper.buttonClick(SCREEN_NAME, "download_confirmed")
-            viewModel.saveGrid(it)
+            val success = viewModel.saveGrid(grid)
+            Toast.makeText(
+                context,
+                context.getString(if (success) R.string.download_success else R.string.download_failure),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     )
 
 }
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun GridScreen(
-    coroutineScope: CoroutineScope,
     gridUiState: GridUiState,
     onPartClick: (Uri) -> Unit,
     onBackClick: () -> Unit,
@@ -133,10 +145,31 @@ fun GridScreen(
 
     TrackScreenViewEvent(screenName = SCREEN_NAME)
 
+    val coroutineScope = rememberCoroutineScope()
+
     Surface(modifier) {
         var requiredAction by remember { mutableStateOf<GridScreenActions?>(null) }
 
         var loading by remember { mutableStateOf(false) }
+
+        // Writing to public storage requires a runtime permission grant before Android 10
+        var pendingDownload by remember { mutableStateOf<Grid?>(null) }
+        val writePermissionState = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            rememberPermissionState(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) { granted ->
+                pendingDownload?.let { grid ->
+                    pendingDownload = null
+                    if (granted) {
+                        coroutineScope.launch {
+                            loading = true
+                            onSaveGrid(grid)
+                            loading = false
+                        }
+                    }
+                }
+            }
+        } else {
+            null
+        }
 
         if (loading) {
             LoadingView()
@@ -170,11 +203,20 @@ fun GridScreen(
                         DialogButtons(
                             onDismissRequest = { requiredAction = null },
                             onConfirm = {
-                                coroutineScope.launch {
-                                    loading = true
-                                    callback(action.grid)
+                                if (action is GridScreenActions.Download &&
+                                    writePermissionState != null &&
+                                    !writePermissionState.status.isGranted
+                                ) {
+                                    pendingDownload = action.grid
                                     requiredAction = null
-                                    loading = false
+                                    writePermissionState.launchPermissionRequest()
+                                } else {
+                                    coroutineScope.launch {
+                                        loading = true
+                                        callback(action.grid)
+                                        requiredAction = null
+                                        loading = false
+                                    }
                                 }
                             },
                             enabled = !loading
@@ -192,7 +234,10 @@ fun GridScreen(
                     )
                         },
                 navigationIcon = { IconButton(onClick = onBackClick) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back arrow")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.a11y_back)
+                    )
                 }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme
@@ -203,14 +248,17 @@ fun GridScreen(
                             GridScreenActions.Delete(gridUiState.grid)
                         }
                     }, enabled = gridUiState is GridUiState.Success) {
-                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
                     }
                     IconButton(onClick = {
                         requiredAction = (gridUiState as? GridUiState.Success)?.let {
                             GridScreenActions.Download(gridUiState.grid)
                         }
                     }, enabled = gridUiState is GridUiState.Success) {
-                        Icon(imageVector = CropNGridIcons.FilledDownload, contentDescription = "Download")
+                        Icon(
+                            imageVector = CropNGridIcons.FilledDownload,
+                            contentDescription = stringResource(R.string.download_grid_parts)
+                        )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                 },
@@ -254,10 +302,16 @@ fun LoadGridBitmap(uris: GridUris, onLoaded: (List<List<Pair<Uri, Bitmap>>>) -> 
     val context = LocalContext.current
 
     LaunchedEffect(uris) {
-        with(context) {
-            uris.map { row -> row.map { uri -> decode(uri).toUri().let { it to contentResolver.getBitmap(it) } } }
-        }.let {
-            onLoaded(it)
+        try {
+            uris.map { row ->
+                row.map { uri ->
+                    decode(uri).toUri().let { it to context.contentResolver.getBitmap(it) }
+                }
+            }.let { onLoaded(it) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e("CropNGrid", "Failed to load grid images", e)
         }
     }
 }
@@ -306,7 +360,7 @@ fun GridPicture(
                                 val currentItemCount = rowNumber * columnCount + columnNumber
                                 Image(
                                     pair.second.asImageBitmap(),
-                                    "",
+                                    stringResource(R.string.a11y_grid_part, itemCount - currentItemCount),
                                     modifier = Modifier
                                         .padding(offset)
                                         .widthIn(max = maxWidthForItem)

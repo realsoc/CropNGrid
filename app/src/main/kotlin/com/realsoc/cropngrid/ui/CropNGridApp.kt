@@ -82,13 +82,17 @@ fun CropNGridApp(
 
             Column(Modifier.fillMaxSize()) {
 
-                CropNGridNavHost(appState = appState, onShowSnackbar = { message, action ->
-                    snackbarHostState.showSnackbar(
-                        message = message,
-                        actionLabel = action,
-                        duration = SnackbarDuration.Short,
-                    ) == SnackbarResult.ActionPerformed
-                })
+                val onShowSnackbar: suspend (String, String?) -> Boolean =
+                    remember(snackbarHostState) {
+                        { message, action ->
+                            snackbarHostState.showSnackbar(
+                                message = message,
+                                actionLabel = action,
+                                duration = SnackbarDuration.Short,
+                            ) == SnackbarResult.ActionPerformed
+                        }
+                    }
+                CropNGridNavHost(appState = appState, onShowSnackbar = onShowSnackbar)
             }
         }
     }

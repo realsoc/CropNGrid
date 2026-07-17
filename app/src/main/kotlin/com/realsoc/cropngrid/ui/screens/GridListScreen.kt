@@ -82,7 +82,7 @@ fun GridListScreen(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(decode(item.miniatureUriEncoded)).build(),
                                 contentScale = ContentScale.Crop,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.a11y_grid_miniature),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .wrapContentHeight()
