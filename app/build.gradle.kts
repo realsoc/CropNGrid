@@ -57,6 +57,11 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            // Embed native symbols for the .so libs pulled in by dependencies,
+            // so Play can symbolicate native crashes/ANRs
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
     }
     compileOptions {
