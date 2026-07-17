@@ -1,10 +1,10 @@
-package com.realsoc.cropngrid.hilt
+package com.realsoc.cropandgrid.hilt
 
+import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.ktx.Firebase
-import com.realsoc.cropngrid.analytics.AnalyticsHelper
-import com.realsoc.cropngrid.analytics.FirebaseAnalyticsHelper
+import com.google.firebase.analytics.analytics
+import com.realsoc.cropandgrid.analytics.AnalyticsHelper
+import com.realsoc.cropandgrid.analytics.FirebaseAnalyticsHelper
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

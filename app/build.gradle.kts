@@ -1,11 +1,12 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
     id("dagger.hilt.android.plugin")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -13,15 +14,15 @@ android {
         create("release") {
         }
     }
-    namespace = "com.realsoc.cropngrid"
-    compileSdk = 34
+    namespace = "com.realsoc.cropandgrid"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.realsoc.cropngrid"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 3
-        versionName = "1.0"
+        applicationId = "com.realsoc.cropandgrid"
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 4 
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -33,14 +34,12 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -57,70 +56,46 @@ android {
 }
 
 dependencies {
-    // androidx.* version number
-    val navVersion = "2.7.5"
-    val roomVersion = "2.6.0"
-    val splashScreenVersion = "1.0.1"
-    val material3Version = "1.1.2"
-    val datastoreVersion = "1.0.0"
-    val activityComposeVersion = "1.8.0"
-    val lifecycleVersion = "2.6.2"
-
-    val composeBom = "2023.10.01"
-
-    // com.google.* version number
-    val gsonVersion = "2.10.1"
-    val hiltComposeVersion = "1.1.0"
-    val accompagnistVersion = "0.32.0"
-    val daggerVersion = "2.48.1"
-
-    val firebaseBom = "32.5.0"
-
-    // third parties version number
-    val coilVersion = "2.5.0"
-    val lottieVersion = "6.1.0"
-
-
     // androidx.*
-    implementation("androidx.core:core-splashscreen:$splashScreenVersion")
-    implementation("androidx.datastore:datastore-preferences:$datastoreVersion")
-    implementation("androidx.compose.material3:material3-window-size-class:$material3Version")
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.hilt:hilt-navigation-compose:$hiltComposeVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
-    implementation("androidx.navigation:navigation-compose:$navVersion")
-    implementation("androidx.activity:activity-compose:$activityComposeVersion")
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.material3.window.size)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.activity.compose)
 
-    implementation(platform("androidx.compose:compose-bom:$composeBom"))
-    implementation("androidx.compose.material3:material3")
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.material3)
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
 
-    androidTestImplementation(platform("androidx.compose:compose-bom:$composeBom"))
-    debugImplementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    debugImplementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
 
     // com.google.*
-    implementation("com.google.dagger:hilt-android:$daggerVersion")
-    ksp("com.google.dagger:hilt-android-compiler:$daggerVersion")
-    implementation("com.google.code.gson:gson:$gsonVersion")
-    implementation("com.google.accompanist:accompanist-permissions:$accompagnistVersion")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.gson)
+    implementation(libs.accompanist.permissions)
 
-    releaseImplementation(platform("com.google.firebase:firebase-bom:$firebaseBom"))
-    releaseImplementation("com.google.firebase:firebase-analytics-ktx")
-    releaseImplementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation(platform(libs.firebase.bom))
+    releaseImplementation(libs.firebase.analytics)
+    releaseImplementation(libs.firebase.crashlytics)
 
 
     // third parties
-    implementation("com.airbnb.android:lottie-compose:$lottieVersion")
+    implementation(libs.lottie.compose)
 
-    implementation("io.coil-kt:coil-compose:$coilVersion")
+    implementation(libs.coil.compose)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 }

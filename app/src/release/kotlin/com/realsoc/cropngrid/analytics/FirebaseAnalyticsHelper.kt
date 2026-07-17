@@ -1,9 +1,9 @@
-package com.realsoc.cropngrid.analytics
+package com.realsoc.cropandgrid.analytics
 
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.logEvent
-import com.realsoc.cropngrid.analytics.AnalyticsEvent.Types.LOG_GRANTED
-import com.realsoc.cropngrid.data.PreferencesRepository
+import com.realsoc.cropandgrid.analytics.AnalyticsEvent.Types.LOG_GRANTED
+import com.realsoc.cropandgrid.data.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
